@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RBF Kernel Working Principle</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f0f1a;
+      --surface: #1a1a2e;
+      --text-primary: #e8e8f0;
+      --accent-cyan: #00d4ff;
+      --accent-magenta: #ff006e;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      border-color: rgba(0, 212, 255, 0.5);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+    }
+    
+    .formula-box {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 110, 0.1));
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 12px;
+    }
+    
+    .viz-canvas {
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    
+    .slider-track {
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+      height: 4px;
+      border-radius: 2px;
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: transparent;
+      width: 100%;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      cursor: pointer;
+      margin-top: -8px;
+      box-shadow: 0 0 15px var(--accent-cyan);
+    }
+    
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+      border-radius: 2px;
+    }
+    
+    .step-indicator {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    .code-block {
+      background: #0a0a14;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .code-header {
+      background: rgba(0, 212, 255, 0.1);
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+    }
+    
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="h-full w-full overflow-auto">
+   <div class="min-h-full w-full p-6 md:p-10"><!-- Header -->
+    <header class="text-center mb-12">
+     <h1 id="main-title" class="text-4xl md:text-5xl font-bold gradient-text mb-4">RBF Kernel Working Principle</h1>
+     <p class="text-lg opacity-80 max-w-2xl mx-auto">Understanding the Radial Basis Function kernel for Support Vector Machines and kernel-based learning</p>
+    </header><!-- Main Content Grid -->
+    <div class="max-w-7xl mx-auto grid gap-8"><!-- Formula Section -->
+     <section class="card p-6 md:p-8">
+      <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="step-indicator">1</span> <span>The RBF Kernel Formula</span></h2>
+      <div class="formula-box p-6 mb-6 text-center">
+       <p class="text-sm opacity-70 mb-3">Gaussian Radial Basis Function</p>
+       <div class="text-2xl md:text-3xl mono font-semibold">
+        K(x, x') = exp(-γ ‖x - x'‖²)
+       </div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+       <div class="bg-black/30 p-4 rounded-lg">
+        <div class="text-cyan-400 mono font-semibold mb-2">
+         K(x, x')
+        </div>
+        <p class="text-sm opacity-80">Similarity measure between two data points in the transformed feature space</p>
+       </div>
+       <div class="bg-black/30 p-4 rounded-lg">
+        <div class="text-pink-400 mono font-semibold mb-2" id="gamma-label">
+         γ (gamma)
+        </div>
+        <p class="text-sm opacity-80">Controls the width of the Gaussian. Higher γ = narrower peak = more complex boundaries</p>
+       </div>
+       <div class="bg-black/30 p-4 rounded-lg">
+        <div class="text-purple-400 mono font-semibold mb-2">
+         ‖x - x'‖²
+        </div>
+        <p class="text-sm opacity-80">Squared Euclidean distance between the two input vectors</p>
+       </div>
+      </div>
+     </section><!-- Interactive Visualization -->
+     <section class="card p-6 md:p-8">
+      <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="step-indicator">2</span> <span>Interactive RBF Visualization</span></h2>
+      <div class="grid lg:grid-cols-2 gap-8"><!-- Canvas -->
+       <div class="viz-canvas p-4 relative" style="min-height: 350px;">
+        <canvas id="rbf-canvas" width="500" height="320"></canvas>
+        <div class="absolute top-4 left-4 text-xs opacity-60">
+         <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-cyan-400"></div><span>Reference point (center)</span>
+         </div>
+        </div>
+       </div><!-- Controls -->
+       <div class="space-y-6">
+        <div><label class="block text-sm font-medium mb-3 flex justify-between"> <span>Gamma (γ) Parameter</span> <span id="gamma-value" class="mono text-cyan-400">0.50</span> </label> <input type="range" id="gamma-slider" min="0.1" max="2" step="0.1" value="0.5">
+         <div class="flex justify-between text-xs opacity-60 mt-2"><span>Wider influence (0.1)</span> <span>Narrower influence (2.0)</span>
+         </div>
+        </div>
+        <div class="bg-black/30 p-4 rounded-lg">
+         <h4 class="font-semibold mb-2 text-cyan-400">What you're seeing:</h4>
+         <p class="text-sm opacity-80" id="viz-description">The heatmap shows RBF kernel values. Brighter areas indicate higher similarity to the center point. With γ = 0.5, nearby points have high similarity that smoothly decreases with distance.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+         <div class="bg-gradient-to-r from-cyan-500/20 to-transparent p-3 rounded-lg border border-cyan-500/30">
+          <div class="text-2xl font-bold text-cyan-400" id="max-kernel">
+           1.00
+          </div>
+          <div class="text-xs opacity-70">
+           Max K(x,x') at center
+          </div>
+         </div>
+         <div class="bg-gradient-to-r from-pink-500/20 to-transparent p-3 rounded-lg border border-pink-500/30">
+          <div class="text-2xl font-bold text-pink-400" id="edge-kernel">
+           0.08
+          </div>
+          <div class="text-xs opacity-70">
+           K(x,x') at edge
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </section><!-- How It Works -->
+     <section class="card p-6 md:p-8">
+      <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="step-indicator">3</span> <span>How RBF Kernel Works</span></h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+       <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex items-center justify-center text-3xl">
+         📊
+        </div>
+        <h4 class="font-semibold mb-2">Input Space</h4>
+        <p class="text-sm opacity-70">Data points exist in original feature space where classes may not be linearly separable</p>
+       </div>
+       <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center text-3xl">
+         🔄
+        </div>
+        <h4 class="font-semibold mb-2">Implicit Mapping</h4>
+        <p class="text-sm opacity-70">RBF kernel implicitly maps data to infinite-dimensional space using the kernel trick</p>
+       </div>
+       <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-500/30 to-red-500/30 flex items-center justify-center text-3xl">
+         📐
+        </div>
+        <h4 class="font-semibold mb-2">Similarity Measure</h4>
+        <p class="text-sm opacity-70">Computes dot product in high-dimensional space as similarity between points</p>
+       </div>
+       <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500/30 to-cyan-500/30 flex items-center justify-center text-3xl">
+         ✂️
+        </div>
+        <h4 class="font-semibold mb-2">Linear Separation</h4>
+        <p class="text-sm opacity-70">Non-linear boundaries in input space become linear hyperplanes in feature space</p>
+       </div>
+      </div>
+     </section><!-- Key Properties -->
+     <section class="grid md:grid-cols-2 gap-8">
+      <div class="card p-6">
+       <h3 class="text-xl font-semibold mb-4 text-cyan-400">✓ Key Properties</h3>
+       <ul class="space-y-3">
+        <li class="flex items-start gap-3"><span class="text-cyan-400 mt-1">●</span> <span class="text-sm"><strong>Bounded output:</strong> K(x,x') always between 0 and 1</span></li>
+        <li class="flex items-start gap-3"><span class="text-cyan-400 mt-1">●</span> <span class="text-sm"><strong>Self-similarity:</strong> K(x,x) = 1 (point is identical to itself)</span></li>
+        <li class="flex items-start gap-3"><span class="text-cyan-400 mt-1">●</span> <span class="text-sm"><strong>Locality:</strong> Points far apart have near-zero similarity</span></li>
+        <li class="flex items-start gap-3"><span class="text-cyan-400 mt-1">●</span> <span class="text-sm"><strong>Universal approximator:</strong> Can represent any continuous function</span></li>
+       </ul>
+      </div>
+      <div class="card p-6">
+       <h3 class="text-xl font-semibold mb-4 text-pink-400">⚠ Considerations</h3>
+       <ul class="space-y-3">
+        <li class="flex items-start gap-3"><span class="text-pink-400 mt-1">●</span> <span class="text-sm"><strong>γ tuning:</strong> Too high → overfitting, too low → underfitting</span></li>
+        <li class="flex items-start gap-3"><span class="text-pink-400 mt-1">●</span> <span class="text-sm"><strong>Feature scaling:</strong> Always normalize features before using RBF</span></li>
+        <li class="flex items-start gap-3"><span class="text-pink-400 mt-1">●</span> <span class="text-sm"><strong>Computational cost:</strong> O(n²) for kernel matrix computation</span></li>
+        <li class="flex items-start gap-3"><span class="text-pink-400 mt-1">●</span> <span class="text-sm"><strong>Cross-validation:</strong> Use grid search for optimal γ and C</span></li>
+       </ul>
+      </div>
+     </section><!-- Code Example -->
+     <section class="card p-6 md:p-8">
+      <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3"><span class="step-indicator">4</span> <span>Implementation Example</span></h2>
+      <div class="code-block">
+       <div class="code-header mono">
+        Python - scikit-learn
+       </div>
+       <pre class="p-4 text-sm overflow-x-auto mono"><code><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC
+<span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.preprocessing</span> <span class="text-pink-400">import</span> StandardScaler
+<span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.model_selection</span> <span class="text-pink-400">import</span> GridSearchCV
+
+<span class="text-gray-500"># Always scale features before RBF kernel</span>
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_train)
+
+<span class="text-gray-500"># Create SVM with RBF kernel</span>
+svm_rbf = SVC(kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-400">0.5</span>, C=<span class="text-yellow-400">1.0</span>)
+
+<span class="text-gray-500"># Grid search for optimal hyperparameters</span>
+param_grid = {
+    <span class="text-green-400">'gamma'</span>: [<span class="text-yellow-400">0.01</span>, <span class="text-yellow-400">0.1</span>, <span class="text-yellow-400">0.5</span>, <span class="text-yellow-400">1.0</span>, <span class="text-yellow-400">10</span>],
+    <span class="text-green-400">'C'</span>: [<span class="text-yellow-400">0.1</span>, <span class="text-yellow-400">1</span>, <span class="text-yellow-400">10</span>, <span class="text-yellow-400">100</span>]
+}
+grid_search = GridSearchCV(svm_rbf, param_grid, cv=<span class="text-yellow-400">5</span>)
+grid_search.fit(X_scaled, y_train)</code></pre>
+      </div>
+      <div class="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+       <p class="text-sm"><span class="text-cyan-400 font-semibold">💡 Pro Tip:</span> A good starting point for γ is <code class="mono bg-black/30 px-2 py-1 rounded">1 / (n_features * X.var())</code> which is the default 'scale' option in scikit-learn.</p>
+      </div>
+     </section><!-- Footer -->
+     <footer class="text-center py-8 opacity-60 text-sm">
+      <p>RBF Kernel Visualization • Interactive Machine Learning Documentation</p>
+     </footer>
+    </div>
+   </div>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      main_title: 'RBF Kernel Working Principle',
+      gamma_label: 'Gamma (γ)',
+      background_color: '#0f0f1a',
+      surface_color: '#1a1a2e',
+      text_color: '#e8e8f0',
+      accent_color: '#00d4ff',
+      secondary_accent: '#ff006e',
+      font_family: 'Space Grotesk',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+
+    // Canvas visualization
+    const canvas = document.getElementById('rbf-canvas');
+    const ctx = canvas.getContext('2d');
+    let gamma = 0.5;
+
+    function rbfKernel(x1, y1, x2, y2, g) {
+      const dist = (x1 - x2) ** 2 + (y1 - y2) ** 2;
+      return Math.exp(-g * dist);
+    }
+
+    function drawRBFHeatmap() {
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const imageData = ctx.createImageData(width, height);
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const normalizedX = (x - centerX) / 50;
+          const normalizedY = (y - centerY) / 50;
+          const k = rbfKernel(normalizedX, normalizedY, 0, 0, gamma);
+          
+          const idx = (y * width + x) * 4;
+          
+          // Gradient from cyan to magenta based on kernel value
+          const r = Math.floor(k * 0 + (1 - k) * 15);
+          const g = Math.floor(k * 212 + (1 - k) * 15);
+          const b = Math.floor(k * 255 + (1 - k) * 26);
+          
+          imageData.data[idx] = r;
+          imageData.data[idx + 1] = g;
+          imageData.data[idx + 2] = b;
+          imageData.data[idx + 3] = 255;
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Draw center point
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#00d4ff';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Draw concentric circles showing kernel decay
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      for (let radius = 50; radius < Math.min(width, height) / 2; radius += 50) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function updateVisualization() {
+      drawRBFHeatmap();
+      
+      // Update stats
+      document.getElementById('gamma-value').textContent = gamma.toFixed(2);
+      document.getElementById('max-kernel').textContent = '1.00';
+      
+      // Calculate edge kernel value (at distance ~3 units)
+      const edgeK = rbfKernel(3, 0, 0, 0, gamma);
+      document.getElementById('edge-kernel').textContent = edgeK.toFixed(2);
+      
+      // Update description based on gamma
+      const desc = document.getElementById('viz-description');
+      if (gamma < 0.3) {
+        desc.textContent = `With γ = ${gamma.toFixed(1)}, the kernel has a wide influence. Points far from the center still have significant similarity, creating smoother, less complex decision boundaries.`;
+      } else if (gamma > 1.2) {
+        desc.textContent = `With γ = ${gamma.toFixed(1)}, the kernel has a very narrow influence. Only points very close to the center have high similarity, allowing for highly complex, potentially overfitting boundaries.`;
+      } else {
+        desc.textContent = `With γ = ${gamma.toFixed(1)}, the kernel has a balanced influence radius. This is often a good starting point that balances model complexity and generalization.`;
+      }
+    }
+
+    // Slider event
+    document.getElementById('gamma-slider').addEventListener('input', (e) => {
+      gamma = parseFloat(e.target.value);
+      updateVisualization();
+    });
+
+    // Element SDK integration
+    async function onConfigChange(cfg) {
+      // Update title
+      const titleEl = document.getElementById('main-title');
+      titleEl.textContent = cfg.main_title || defaultConfig.main_title;
+      
+      // Update gamma label
+      const gammaLabelEl = document.getElementById('gamma-label');
+      gammaLabelEl.textContent = cfg.gamma_label || defaultConfig.gamma_label;
+      
+      // Apply colors
+      const bgColor = cfg.background_color || defaultConfig.background_color;
+      const surfaceColor = cfg.surface_color || defaultConfig.surface_color;
+      const textColor = cfg.text_color || defaultConfig.text_color;
+      const accentColor = cfg.accent_color || defaultConfig.accent_color;
+      const secondaryAccent = cfg.secondary_accent || defaultConfig.secondary_accent;
+      
+      document.documentElement.style.setProperty('--bg-dark', bgColor);
+      document.documentElement.style.setProperty('--surface', surfaceColor);
+      document.documentElement.style.setProperty('--text-primary', textColor);
+      document.documentElement.style.setProperty('--accent-cyan', accentColor);
+      document.documentElement.style.setProperty('--accent-magenta', secondaryAccent);
+      
+      document.body.style.background = bgColor;
+      document.body.style.color = textColor;
+      
+      // Apply font
+      const fontFamily = cfg.font_family || defaultConfig.font_family;
+      const baseFontStack = 'sans-serif';
+      document.body.style.fontFamily = `${fontFamily}, ${baseFontStack}`;
+      
+      // Apply font size
+      const fontSize = cfg.font_size || defaultConfig.font_size;
+      document.body.style.fontSize = `${fontSize}px`;
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+          },
+          {
+            get: () => cfg.surface_color || defaultConfig.surface_color,
+            set: (v) => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+          },
+          {
+            get: () => cfg.accent_color || defaultConfig.accent_color,
+            set: (v) => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+          },
+          {
+            get: () => cfg.secondary_accent || defaultConfig.secondary_accent,
+            set: (v) => { cfg.secondary_accent = v; window.elementSdk.setConfig({ secondary_accent: v }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (v) => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => cfg.font_size || defaultConfig.font_size,
+          set: (v) => { cfg.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['main_title', cfg.main_title || defaultConfig.main_title],
+        ['gamma_label', cfg.gamma_label || defaultConfig.gamma_label]
+      ]);
+    }
+
+    // Initialize
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    // Initial draw
+    updateVisualization();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d0fae4f92285996',t:'MTc3MTYwODA5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

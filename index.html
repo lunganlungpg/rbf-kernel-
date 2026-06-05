@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -602,6 +602,7 @@
           <article class="card">
             <h3>ICAR–IASRI</h3>
             <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Library Avenue, Pusa Campus<br />New Delhi – 110012</p>
+            <!-- Replace email and phone placeholders with official IASRI contact details -->
             <p><i class="fa-solid fa-envelope" aria-hidden="true"></i> Email: <a href="mailto:info@example.org">info@example.org</a></p>
             <p><i class="fa-solid fa-phone" aria-hidden="true"></i> Phone: <a href="tel:+910000000000">+91-00000-00000</a></p>
           </article>
@@ -656,6 +657,10 @@
     const startQuizBtn = document.getElementById("startQuizBtn");
     if (startQuizBtn) {
       startQuizBtn.addEventListener("click", () => {
+        if (QUIZ_URL === "https://example.com/quiz") {
+          alert("Please update QUIZ_URL in index.html with the official quiz link.");
+          return;
+        }
         window.open(QUIZ_URL, "_blank", "noopener,noreferrer");
       });
     }

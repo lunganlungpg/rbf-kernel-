@@ -1,936 +1,732 @@
-<!doctype html>
-<html lang="en" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RBF Kernel Case Studies</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="National Statistics Day 2026 celebration page by ICAR-IASRI, New Delhi." />
+  <title>National Statistics Day 2026 | ICAR-IASRI</title>
+
+  <!-- Font Awesome for icons -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!--
+    CONTENT TODO CHECKLIST BEFORE PRODUCTION:
+    1) Replace placeholder image URLs (profile, logos, gallery, quiz illustration)
+    2) Replace QUIZ_URL with official quiz link
+    3) Replace email/phone placeholders with official ICAR-IASRI contacts
+    4) Replace social media '#' links with official profile URLs
+    5) Replace Google Maps placeholder embed with exact IASRI location embed
+  -->
+
   <style>
+    /* ================================
+      CSS Variables (easy theme editing)
+    ===================================*/
     :root {
-      --bg-dark: #0f0f1a;
-      --surface: #1a1a2e;
-      --text-primary: #e8e8f0;
-      --accent-cyan: #00d4ff;
-      --accent-magenta: #ff006e;
+      --bg: #0d1b2a;
+      --bg-soft: #13263b;
+      --surface: #ffffff;
+      --surface-soft: #f2f7fb;
+      --text: #10263d;
+      --text-light: #4f6479;
+      --brand: #0b5fa5;
+      --brand-2: #0099cc;
+      --accent: #2ca58d;
+      --warning: #f4a259;
+      --border: #d8e4ef;
+      --radius: 16px;
+      --shadow: 0 12px 30px rgba(16, 38, 61, 0.14);
+      --container: min(1150px, 92%);
     }
-    
+
     * { box-sizing: border-box; }
-    
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      background: var(--surface-soft);
     }
-    
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    
-    .gradient-text {
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+
+    img, iframe { max-width: 100%; display: block; }
+    a { color: inherit; }
+    .container { width: var(--container); margin: 0 auto; }
+
+    /* ================================
+      Generic UI components
+    ===================================*/
+    .section { padding: 4.5rem 0; }
+    .section-title { font-size: clamp(1.65rem, 1.2rem + 2vw, 2.5rem); margin: 0 0 0.8rem; }
+    .section-subtitle { margin: 0 0 2rem; color: var(--text-light); max-width: 70ch; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
     }
-    
     .card {
       background: var(--surface);
-      border: 1px solid rgba(0, 212, 255, 0.2);
-      border-radius: 16px;
-      transition: all 0.3s ease;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    
-    .card:hover {
-      border-color: rgba(0, 212, 255, 0.5);
-      box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .card h3, .card h4 { margin: 0 0 0.45rem; }
+    .icon {
+      width: 2.4rem;
+      height: 2.4rem;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+      margin-bottom: 0.7rem;
+      font-size: 0.95rem;
     }
-    
-    .case-study-card {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(255, 0, 110, 0.05));
-      border: 2px solid rgba(0, 212, 255, 0.2);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.4s ease;
-    }
-    
-    .case-study-card:hover {
-      border-color: rgba(0, 212, 255, 0.6);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0, 212, 255, 0.15);
-    }
-    
-    .case-header {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 110, 0.1));
-      border-bottom: 2px solid rgba(0, 212, 255, 0.2);
-      padding: 24px;
-    }
-    
-    .case-icon {
-      font-size: 3rem;
-      line-height: 1;
-      margin-bottom: 16px;
-    }
-    
-    .metric-box {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 12px;
-      padding: 16px;
-    }
-    
-    .metric-value {
-      font-size: 1.75rem;
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.3rem; }
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.8rem 1.25rem;
       font-weight: 700;
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-    
-    .metric-label {
-      font-size: 0.85rem;
-      opacity: 0.75;
-      margin-top: 4px;
+    .btn:hover { transform: translateY(-2px); opacity: 0.94; }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.4); color: #fff; }
+    .pill { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 999px; background: #e8f4ff; color: var(--brand); font-size: 0.82rem; font-weight: 700; }
+
+    /* ================================
+      Sticky Navigation
+    ===================================*/
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(13, 27, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    
-    .config-table {
-      width: 100%;
-      border-collapse: collapse;
+    .nav-inner {
+      width: var(--container);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.65rem 0;
     }
-    
-    .config-table td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-    }
-    
-    .config-table td:first-child {
-      color: var(--accent-cyan);
-      font-weight: 600;
-      width: 40%;
-    }
-    
-    .config-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .code-block {
-      background: #0a0a14;
-      border: 1px solid rgba(0, 212, 255, 0.2);
+    .brand { color: #fff; font-size: 0.95rem; font-weight: 700; text-decoration: none; }
+    .nav-links { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .nav-links a {
+      color: #d8e8f8;
+      text-decoration: none;
+      font-size: 0.86rem;
+      padding: 0.3rem 0.5rem;
       border-radius: 8px;
+    }
+    .nav-links a:hover, .nav-links a:focus-visible { background: rgba(255,255,255,0.12); outline: none; }
+
+    /* ================================
+      Hero Section
+    ===================================*/
+    .hero {
+      min-height: 100vh;
+      color: #fff;
+      display: grid;
+      align-items: center;
+      position: relative;
+      isolation: isolate;
       overflow: hidden;
-      margin-top: 12px;
+      background: linear-gradient(rgba(7, 17, 27, 0.72), rgba(7, 17, 27, 0.72)),
+        url("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
     }
-    
-    .code-header {
-      background: rgba(0, 212, 255, 0.1);
-      padding: 8px 16px;
-      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-      font-size: 0.85rem;
-      color: var(--accent-cyan);
+    .hero-content { width: var(--container); margin: 0 auto; padding: 5rem 0 3rem; }
+    .hero h1 { font-size: clamp(2.1rem, 1.5rem + 3vw, 3.6rem); line-height: 1.15; margin: 0; }
+    .hero h2 { margin: 0.9rem 0; font-size: clamp(1.05rem, 0.95rem + 1vw, 1.45rem); color: #d6f0ff; font-weight: 600; }
+    .hero p { max-width: 72ch; margin: 0.4rem 0; }
+
+    /* Animated background statistics dots */
+    .stat-float {
+      position: absolute;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(0,153,204,0.1));
+      animation: rise 11s linear infinite;
+      border: 1px solid rgba(255,255,255,0.2);
+      z-index: -1;
     }
-    
-    .code-content {
-      padding: 16px;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      overflow-x: auto;
+    .f1 { width: 80px; height: 80px; left: 8%; bottom: -90px; animation-duration: 11s; }
+    .f2 { width: 45px; height: 45px; left: 32%; bottom: -80px; animation-duration: 13s; animation-delay: 1s; }
+    .f3 { width: 60px; height: 60px; left: 58%; bottom: -110px; animation-duration: 12s; animation-delay: 2s; }
+    .f4 { width: 38px; height: 38px; left: 76%; bottom: -70px; animation-duration: 10s; animation-delay: 1.5s; }
+    .f5 { width: 95px; height: 95px; left: 90%; bottom: -120px; animation-duration: 15s; animation-delay: 0.5s; }
+    @keyframes rise {
+      from { transform: translateY(0) rotate(0deg); opacity: 0; }
+      20% { opacity: 1; }
+      to { transform: translateY(-120vh) rotate(180deg); opacity: 0; }
     }
-    
-    .comparison-table {
+
+    /* ================================
+      Timeline styles (used twice)
+    ===================================*/
+    .timeline {
+      position: relative;
+      margin: 1rem 0;
+      padding-left: 1.2rem;
+      border-left: 3px solid #bfd3e6;
+    }
+    .timeline-item { position: relative; margin: 0 0 1rem; padding-left: 1rem; }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -1.47rem;
+      top: 0.35rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px #bfd3e6;
+    }
+
+    /* ================================
+      Highlight and media panels
+    ===================================*/
+    .highlight {
+      background: linear-gradient(135deg, #e8f4ff, #ecfbff);
+      border: 1px solid #c3dff2;
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    .profile-placeholder {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #f0f5fa;
+    }
+    .profile-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ================================
+      Gallery + lightbox
+    ===================================*/
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 0.8rem;
+    }
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .gallery-item img {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      transition: transform 0.35s ease;
     }
-    
-    .comparison-table th {
-      background: rgba(0, 212, 255, 0.1);
-      padding: 12px;
-      text-align: left;
-      border: 1px solid rgba(0, 212, 255, 0.2);
-      font-weight: 600;
-      color: var(--accent-cyan);
+    .gallery-item:hover img { transform: scale(1.08); }
+    .gallery-label {
+      position: absolute;
+      left: 0.45rem;
+      bottom: 0.45rem;
+      font-size: 0.72rem;
+      background: rgba(13,27,42,0.72);
+      color: #fff;
+      padding: 0.2rem 0.45rem;
+      border-radius: 999px;
     }
-    
-    .comparison-table td {
-      padding: 12px;
-      border: 1px solid rgba(0, 212, 255, 0.1);
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(7, 17, 27, 0.88);
+      z-index: 1100;
+      padding: 1rem;
     }
-    
-    .comparison-table tr:nth-child(even) {
-      background: rgba(0, 212, 255, 0.02);
+    .lightbox.open { display: grid; }
+    .lightbox img { max-height: 82vh; border-radius: 12px; box-shadow: var(--shadow); }
+    .lightbox button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.1rem;
+      background: rgba(255,255,255,0.9);
     }
-    
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      background: rgba(0, 212, 255, 0.2);
-      border: 1px solid rgba(0, 212, 255, 0.4);
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
+
+    /* ================================
+      Video cards
+    ===================================*/
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
     }
-    
-    .badge.success {
-      background: rgba(34, 197, 94, 0.2);
-      border-color: rgba(34, 197, 94, 0.4);
-      color: #86efac;
+    .video-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
     }
-    
-    .badge.warning {
-      background: rgba(234, 179, 8, 0.2);
-      border-color: rgba(234, 179, 8, 0.4);
-      color: #facc15;
+    .video-frame {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      background: #000;
     }
-    
-    .challenge-item {
-      background: rgba(239, 68, 68, 0.1);
-      border-left: 3px solid rgba(239, 68, 68, 0.5);
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+    .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .video-body { padding: 0.85rem; }
+
+    /* ================================
+      Facts carousel
+    ===================================*/
+    .facts-carousel {
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--brand), #07477d);
+      color: #fff;
+      padding: 1.6rem;
+      min-height: 160px;
+      display: grid;
+      place-items: center;
+      text-align: center;
     }
-    
-    .success-item {
-      background: rgba(34, 197, 94, 0.1);
-      border-left: 3px solid rgba(34, 197, 94, 0.5);
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+    .fact-text { font-size: clamp(1.05rem, 1rem + 1vw, 1.5rem); font-weight: 700; margin: 0; max-width: 70ch; }
+
+    /* ================================
+      Contact and footer
+    ===================================*/
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
     }
-    
-    .fade-in {
-      animation: fadeIn 0.5s ease-out;
+    .footer {
+      background: var(--bg);
+      color: #d3e0ec;
+      padding: 2rem 0;
+      margin-top: 2rem;
     }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .footer-grid {
+      width: var(--container);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .footer a { color: #ecf4fb; text-decoration: none; }
+    .footer-links { list-style: none; padding: 0; margin: 0; }
+    .footer-links li { margin: 0.3rem 0; }
+    .social a { margin-right: 0.6rem; font-size: 1.05rem; }
+
+    /* ================================
+      Fade-in animations (IntersectionObserver)
+    ===================================*/
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ================================
+      Responsive behavior
+    ===================================*/
+    @media (max-width: 900px) {
+      .profile-layout, .contact-grid, .footer-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .hero-content { padding-top: 4.2rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full">
-  <div id="app-wrapper" class="h-full w-full overflow-auto">
-   <div class="min-h-full w-full p-6 md:p-10"><!-- Header -->
-    <header class="text-center mb-16">
-     <h1 class="text-5xl md:text-6xl font-bold gradient-text mb-4">RBF Kernel Case Studies</h1>
-     <p class="text-xl opacity-80 max-w-3xl mx-auto">Real-world applications of Radial Basis Function kernels across industries, with detailed configurations and results</p>
-     <div class="mt-8 flex justify-center gap-4"><a href="index.html" class="inline-block px-6 py-2 rounded-lg border border-cyan-500/30 hover:border-cyan-500 transition-colors">← Back to Overview</a>
-     </div>
-    </header><!-- Case Studies Grid -->
-    <div class="max-w-7xl mx-auto space-y-12"><!-- Case Study 1: Medical Diagnosis -->
-     <div class="case-study-card fade-in">
-      <div class="case-header">
-       <div class="case-icon">
-        🏥
-       </div>
-       <h2 class="text-3xl font-bold">Medical Diagnosis: Breast Cancer Classification</h2>
-       <p class="opacity-80 mt-3">Predicting malignant vs benign tumors using patient medical features</p>
+</head>
+<body>
+  <!-- Sticky Navigation -->
+  <nav class="top-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#home" class="brand">National Statistics Day 2026</a>
+      <div class="nav-links">
+        <a href="#about-day">About Day</a>
+        <a href="#mahalanobis">P. C. Mahalanobis</a>
+        <a href="#iasri">IASRI</a>
+        <a href="#quiz">Quiz</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#videos">Videos</a>
+        <a href="#contact">Contact</a>
       </div>
-      <div class="p-8 space-y-8"><!-- Problem Statement -->
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-cyan-400">Problem Statement</h3>
-        <p class="opacity-90 leading-relaxed">Early breast cancer detection is critical for survival rates. Medical teams need to classify tumors as malignant or benign based on diagnostic measurements like cell thickness, uniformity, and mitotic rate. Misclassification can have serious consequences, so high accuracy is essential.</p>
-        <div class="mt-4 p-4 bg-black/30 rounded-lg">
-         <p class="text-sm"><strong>Dataset:</strong> Wisconsin Breast Cancer Dataset (569 samples, 30 features)</p>
-         <p class="text-sm mt-1"><strong>Task:</strong> Binary classification (benign/malignant)</p>
-        </div>
-       </div><!-- Why RBF Works -->
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-magenta-400">Why RBF Kernel Works Here</h3>
-        <ul class="space-y-3">
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Non-linear boundaries:</strong> Medical features interact in complex ways. A tumor with moderate size but high cell irregularity might be malignant, while another with large size but uniform cells is benign.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Local regions:</strong> RBF focuses on local patterns, capturing subtle differences in feature combinations.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>High accuracy requirement:</strong> RBF's flexibility allows precise decision boundaries needed for critical medical decisions.</span></li>
-        </ul>
-       </div><!-- Configuration & Results -->
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-cyan-400">Optimal Configuration</h4>
-         <table class="config-table">
-          <tbody>
-           <tr>
-            <td>Gamma (γ)</td>
-            <td class="font-mono">0.001</td>
-           </tr>
-           <tr>
-            <td>C (Regularization)</td>
-            <td class="font-mono">100</td>
-           </tr>
-           <tr>
-            <td>Kernel</td>
-            <td class="font-mono">rbf</td>
-           </tr>
-           <tr>
-            <td>Class Weight</td>
-            <td class="font-mono">balanced</td>
-           </tr>
-          </tbody>
-         </table>
-        </div>
-        <div class="space-y-3">
-         <div class="metric-box">
-          <div class="metric-value">
-           97.2%
-          </div>
-          <div class="metric-label">
-           Accuracy
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           98.1%
-          </div>
-          <div class="metric-label">
-           Sensitivity (Recall)
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           96.5%
-          </div>
-          <div class="metric-label">
-           Specificity
-          </div>
-         </div>
-        </div>
-       </div><!-- Code Implementation -->
-       <div>
-        <h4 class="font-semibold mb-3 text-cyan-400">Implementation</h4>
-        <div class="code-block">
-         <div class="code-header mono">
-          Python - scikit-learn
-         </div>
-         <div class="code-content mono"><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.preprocessing</span> <span class="text-pink-400">import</span> StandardScaler <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.model_selection</span> <span class="text-pink-400">import</span> train_test_split <span class="text-gray-500"># Always scale medical features</span> scaler = StandardScaler() X_scaled = scaler.fit_transform(X) X_train, X_test, y_train, y_test = train_test_split( X_scaled, y, test_size=<span class="text-yellow-400">0.2</span>, random_state=<span class="text-yellow-400">42</span> ) <span class="text-gray-500"># RBF SVM with balanced classes for medical data</span> model = SVC( kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-400">0.001</span>, C=<span class="text-yellow-400">100</span>, class_weight=<span class="text-green-400">'balanced'</span> ) model.fit(X_train, y_train) accuracy = model.score(X_test, y_test) <span class="text-gray-500"># 97.2%</span>
-         </div>
-        </div>
-       </div><!-- Key Insights & Challenges -->
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-green-400">Key Successes</h4>
-         <div class="success-item">
-          ✓ Catches 98.1% of malignant cases (high sensitivity) - critical for early detection
-         </div>
-         <div class="success-item">
-          ✓ Low false positive rate (96.5% specificity) - avoids unnecessary biopsies
-         </div>
-         <div class="success-item">
-          ✓ Handles imbalanced data well with class weighting
-         </div>
-        </div>
-        <div>
-         <h4 class="font-semibold mb-4 text-yellow-400">Challenges &amp; Solutions</h4>
-         <div class="challenge-item">
-          ⚠ Low gamma (0.001) needed - medical data very high-dimensional after feature engineering
-         </div>
-         <div class="challenge-item">
-          ⚠ Feature scaling critical - different measurement units in raw data
-         </div>
-         <div class="challenge-item">
-          ⚠ Class imbalance - more benign cases than malignant
-         </div>
-        </div>
-       </div>
-      </div>
-     </div><!-- Case Study 2: Face Recognition -->
-     <div class="case-study-card fade-in">
-      <div class="case-header">
-       <div class="case-icon">
-        👤
-       </div>
-       <h2 class="text-3xl font-bold">Face Recognition: Identity Verification</h2>
-       <p class="opacity-80 mt-3">Verifying whether two face images belong to the same person</p>
-      </div>
-      <div class="p-8 space-y-8">
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-cyan-400">Problem Statement</h3>
-        <p class="opacity-90 leading-relaxed">Face recognition systems need to verify user identity at airport security, banking apps, and device unlock. The system must distinguish genuine matches from impostors, even with different angles, lighting, and expressions. High accuracy is mandatory for security.</p>
-        <div class="mt-4 p-4 bg-black/30 rounded-lg">
-         <p class="text-sm"><strong>Dataset:</strong> LFW (Labeled Faces in the Wild) - 1,288 subjects, 5,749 images</p>
-         <p class="text-sm mt-1"><strong>Task:</strong> Face verification (same person / different person)</p>
-        </div>
-       </div>
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-magenta-400">Why RBF Kernel Works Here</h3>
-        <ul class="space-y-3">
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Complex feature interactions:</strong> Face features (distance between eyes, nose shape, jaw line) interact non-linearly. Subtle combinations matter.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Manifold learning:</strong> Face embeddings lie on a low-dimensional manifold, and RBF captures this structure effectively.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Local similarity crucial:</strong> Similar faces cluster locally; RBF's local neighborhood approach is ideal.</span></li>
-        </ul>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-cyan-400">Optimal Configuration</h4>
-         <table class="config-table">
-          <tbody>
-           <tr>
-            <td>Gamma (γ)</td>
-            <td class="font-mono">0.01</td>
-           </tr>
-           <tr>
-            <td>C (Regularization)</td>
-            <td class="font-mono">10</td>
-           </tr>
-           <tr>
-            <td>Kernel</td>
-            <td class="font-mono">rbf</td>
-           </tr>
-           <tr>
-            <td>Features</td>
-            <td class="font-mono">CNN embeddings (128-dim)</td>
-           </tr>
-          </tbody>
-         </table>
-        </div>
-        <div class="space-y-3">
-         <div class="metric-box">
-          <div class="metric-value">
-           99.1%
-          </div>
-          <div class="metric-label">
-           Accuracy
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           99.4%
-          </div>
-          <div class="metric-label">
-           True Positive Rate
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           0.8%
-          </div>
-          <div class="metric-label">
-           False Rejection Rate
-          </div>
-         </div>
-        </div>
-       </div>
-       <div>
-        <h4 class="font-semibold mb-3 text-cyan-400">Implementation (Post CNN Embeddings)</h4>
-        <div class="code-block">
-         <div class="code-header mono">
-          Python - Face Verification with RBF
-         </div>
-         <div class="code-content mono"><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC <span class="text-pink-400">import</span> <span class="text-cyan-400">numpy</span> <span class="text-pink-400">as</span> np <span class="text-gray-500"># Face embeddings already normalized (from CNN model)</span> <span class="text-gray-500"># No additional scaling needed for pre-processed embeddings</span> model = SVC( kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-400">0.01</span>, C=<span class="text-yellow-400">10</span>, probability=<span class="text-green-400">True</span> ) model.fit(X_train_embeddings, y_train) <span class="text-gray-500"># Get confidence scores</span> confidence = model.decision_function(X_test_embeddings) predictions = model.predict(X_test_embeddings)
-         </div>
-        </div>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-green-400">Key Successes</h4>
-         <div class="success-item">
-          ✓ 99.1% accuracy - production-ready for security applications
-         </div>
-         <div class="success-item">
-          ✓ 0.8% false rejection rate - users rarely blocked by mistake
-         </div>
-         <div class="success-item">
-          ✓ Works with varied angles, lighting, expressions
-         </div>
-        </div>
-        <div>
-         <h4 class="font-semibold mb-4 text-yellow-400">Considerations</h4>
-         <div class="challenge-item">
-          ⚠ Depends heavily on quality of CNN embeddings
-         </div>
-         <div class="challenge-item">
-          ⚠ Requires sufficient training data of same faces
-         </div>
-         <div class="challenge-item">
-          ⚠ Sensitive to outliers - preprocessing crucial
-         </div>
-        </div>
-       </div>
-      </div>
-     </div><!-- Case Study 3: Cybersecurity -->
-     <div class="case-study-card fade-in">
-      <div class="case-header">
-       <div class="case-icon">
-        🔒
-       </div>
-       <h2 class="text-3xl font-bold">Cybersecurity: Network Intrusion Detection</h2>
-       <p class="opacity-80 mt-3">Identifying malicious network traffic and preventing attacks</p>
-      </div>
-      <div class="p-8 space-y-8">
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-cyan-400">Problem Statement</h3>
-        <p class="opacity-90 leading-relaxed">Network security teams need real-time detection of intrusion attempts. Attackers use sophisticated techniques varying from direct brute-force attacks to subtle data exfiltration. The system must distinguish legitimate traffic patterns from attack signatures, with minimal false alarms.</p>
-        <div class="mt-4 p-4 bg-black/30 rounded-lg">
-         <p class="text-sm"><strong>Dataset:</strong> KDD Cup 1999 Intrusion Detection (494,021 samples, 41 features)</p>
-         <p class="text-sm mt-1"><strong>Task:</strong> Binary classification (normal / attack)</p>
-        </div>
-       </div>
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-magenta-400">Why RBF Kernel Works Here</h3>
-        <ul class="space-y-3">
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Unknown attack vectors:</strong> New attack patterns are constantly emerging. RBF's ability to create complex decision boundaries helps detect novel attacks.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Non-linear patterns:</strong> Attack signatures involve complex feature combinations (port sequence, packet size patterns, timing).</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Scalability:</strong> RBF handles high-dimensional network features effectively.</span></li>
-        </ul>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-cyan-400">Optimal Configuration</h4>
-         <table class="config-table">
-          <tbody>
-           <tr>
-            <td>Gamma (γ)</td>
-            <td class="font-mono">0.1</td>
-           </tr>
-           <tr>
-            <td>C (Regularization)</td>
-            <td class="font-mono">1000</td>
-           </tr>
-           <tr>
-            <td>Kernel</td>
-            <td class="font-mono">rbf</td>
-           </tr>
-           <tr>
-            <td>Class Weight</td>
-            <td class="font-mono">balanced</td>
-           </tr>
-          </tbody>
-         </table>
-        </div>
-        <div class="space-y-3">
-         <div class="metric-box">
-          <div class="metric-value">
-           98.4%
-          </div>
-          <div class="metric-label">
-           Detection Rate
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           0.9%
-          </div>
-          <div class="metric-label">
-           False Positive Rate
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           97.8%
-          </div>
-          <div class="metric-label">
-           Precision
-          </div>
-         </div>
-        </div>
-       </div>
-       <div>
-        <h4 class="font-semibold mb-3 text-cyan-400">Implementation</h4>
-        <div class="code-block">
-         <div class="code-header mono">
-          Python - Intrusion Detection Pipeline
-         </div>
-         <div class="code-content mono"><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.preprocessing</span> <span class="text-pink-400">import</span> StandardScaler <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.pipeline</span> <span class="text-pink-400">import</span> Pipeline <span class="text-gray-500"># Create pipeline to handle preprocessing</span> intrusion_detector = Pipeline([ (<span class="text-green-400">'scaler'</span>, StandardScaler()), (<span class="text-green-400">'svm'</span>, SVC( kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-400">0.1</span>, C=<span class="text-yellow-400">1000</span>, class_weight=<span class="text-green-400">'balanced'</span>, probability=<span class="text-green-400">True</span> )) ]) intrusion_detector.fit(X_train, y_train) <span class="text-gray-500"># Real-time detection on network traffic</span> anomaly_score = intrusion_detector.decision_function(X_new_traffic) is_attack = intrusion_detector.predict(X_new_traffic)
-         </div>
-        </div>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-green-400">Key Successes</h4>
-         <div class="success-item">
-          ✓ 98.4% detection rate catches most intrusions
-         </div>
-         <div class="success-item">
-          ✓ 0.9% false positive rate keeps alerts meaningful
-         </div>
-         <div class="success-item">
-          ✓ Real-time capability with support vectors caching
-         </div>
-        </div>
-        <div>
-         <h4 class="font-semibold mb-4 text-yellow-400">Challenges</h4>
-         <div class="challenge-item">
-          ⚠ Highly imbalanced dataset - attacks are rare
-         </div>
-         <div class="challenge-item">
-          ⚠ Evolving threat landscape requires retraining
-         </div>
-         <div class="challenge-item">
-          ⚠ Feature engineering critical - raw network data needs preprocessing
-         </div>
-        </div>
-       </div>
-      </div>
-     </div><!-- Case Study 4: Finance -->
-     <div class="case-study-card fade-in">
-      <div class="case-header">
-       <div class="case-icon">
-        📈
-       </div>
-       <h2 class="text-3xl font-bold">Finance: Stock Volatility Prediction</h2>
-       <p class="opacity-80 mt-3">Predicting market turbulence and identifying trading opportunities</p>
-      </div>
-      <div class="p-8 space-y-8">
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-cyan-400">Problem Statement</h3>
-        <p class="opacity-90 leading-relaxed">Quantitative traders use volatility predictions to optimize portfolio strategies. The goal is to classify market periods as high-volatility or low-volatility based on technical indicators and market microstructure data. Accurate predictions lead to better hedging and profitable trading strategies.</p>
-        <div class="mt-4 p-4 bg-black/30 rounded-lg">
-         <p class="text-sm"><strong>Data:</strong> S&amp;P 500 daily OHLCV + technical indicators (2015-2023)</p>
-         <p class="text-sm mt-1"><strong>Task:</strong> Binary classification (high volatility / low volatility)</p>
-        </div>
-       </div>
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-magenta-400">Why RBF Kernel Works Here</h3>
-        <ul class="space-y-3">
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Non-linear market dynamics:</strong> Market behavior involves complex feedback loops and non-linear relationships between indicators.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Regime changes:</strong> Different market regimes (bull/bear, high/low interest rates) have different feature relationships.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Local patterns matter:</strong> Similar market conditions cluster together; RBF captures these clusters well.</span></li>
-        </ul>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-cyan-400">Optimal Configuration</h4>
-         <table class="config-table">
-          <tbody>
-           <tr>
-            <td>Gamma (γ)</td>
-            <td class="font-mono">0.05</td>
-           </tr>
-           <tr>
-            <td>C (Regularization)</td>
-            <td class="font-mono">10</td>
-           </tr>
-           <tr>
-            <td>Kernel</td>
-            <td class="font-mono">rbf</td>
-           </tr>
-           <tr>
-            <td>Features (selected)</td>
-            <td class="font-mono">20 from 50</td>
-           </tr>
-          </tbody>
-         </table>
-        </div>
-        <div class="space-y-3">
-         <div class="metric-box">
-          <div class="metric-value">
-           72.3%
-          </div>
-          <div class="metric-label">
-           Accuracy
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           12.5%
-          </div>
-          <div class="metric-label">
-           Backtesting Profit
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           1.8
-          </div>
-          <div class="metric-label">
-           Sharpe Ratio
-          </div>
-         </div>
-        </div>
-       </div>
-       <div>
-        <h4 class="font-semibold mb-3 text-cyan-400">Implementation</h4>
-        <div class="code-block">
-         <div class="code-header mono">
-          Python - Stock Volatility Trading Strategy
-         </div>
-         <div class="code-content mono"><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.preprocessing</span> <span class="text-pink-400">import</span> StandardScaler <span class="text-pink-400">import</span> <span class="text-cyan-400">pandas</span> <span class="text-pink-400">as</span> pd <span class="text-gray-500"># Prepare market data with technical indicators</span> scaler = StandardScaler() X_scaled = scaler.fit_transform(X_indicators) <span class="text-gray-500"># Train volatility classifier</span> volatility_model = SVC( kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-400">0.05</span>, C=<span class="text-yellow-400">10</span>, probability=<span class="text-green-400">True</span> ) volatility_model.fit(X_train, y_train) <span class="text-gray-500"># Generate trading signals</span> vol_prob = volatility_model.predict_proba(X_test) high_vol_confidence = vol_prob[:, <span class="text-yellow-400">1</span>] <span class="text-gray-500"># Execute strategy: long vol or short vol based on confidence</span> trading_signal = (high_vol_confidence &gt; <span class="text-yellow-404">0.6</span>).astype(int)
-         </div>
-        </div>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-green-400">Key Successes</h4>
-         <div class="success-item">
-          ✓ 72.3% accuracy on held-out test set
-         </div>
-         <div class="success-item">
-          ✓ 12.5% annual return in backtesting
-         </div>
-         <div class="success-item">
-          ✓ 1.8 Sharpe ratio indicates good risk-adjusted returns
-         </div>
-        </div>
-        <div>
-         <h4 class="font-semibold mb-4 text-yellow-400">Important Notes</h4>
-         <div class="challenge-item">
-          ⚠ Past performance ≠ future results (market regimes change)
-         </div>
-         <div class="challenge-item">
-          ⚠ Requires frequent retraining (monthly/quarterly)
-         </div>
-         <div class="challenge-item">
-          ⚠ Transaction costs not included in backtest
-         </div>
-        </div>
-       </div>
-      </div>
-     </div><!-- Case Study 5: OCR -->
-     <div class="case-study-card fade-in">
-      <div class="case-header">
-       <div class="case-icon">
-        🔢
-       </div>
-       <h2 class="text-3xl font-bold">OCR: Handwritten Digit Recognition</h2>
-       <p class="opacity-80 mt-3">Converting handwritten numbers to digital text for postal and banking applications</p>
-      </div>
-      <div class="p-8 space-y-8">
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-cyan-400">Problem Statement</h3>
-        <p class="opacity-90 leading-relaxed">Postal services and banks need to read handwritten digits automatically. Each person writes differently, with variations in size, angle, thickness, and style. The system must recognize digits 0-9 with high accuracy to avoid misrouting mail or transaction errors.</p>
-        <div class="mt-4 p-4 bg-black/30 rounded-lg">
-         <p class="text-sm"><strong>Dataset:</strong> MNIST (60,000 training, 10,000 test, 28×28 pixel images)</p>
-         <p class="text-sm mt-1"><strong>Task:</strong> Multi-class classification (10 classes: digits 0-9)</p>
-        </div>
-       </div>
-       <div>
-        <h3 class="text-xl font-semibold mb-4 text-magenta-400">Why RBF Kernel Works Here</h3>
-        <ul class="space-y-3">
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Handwriting variations:</strong> Digits are non-linearly separable in pixel space due to style variations.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Pixel manifolds:</strong> Handwritten digits lie on low-dimensional manifolds; RBF captures this structure.</span></li>
-         <li class="flex items-start gap-3"><span class="text-cyan-400 font-bold">✓</span> <span><strong>Established baseline:</strong> RBF SVM with PCA preprocessing is a classical, reliable baseline for digit recognition.</span></li>
-        </ul>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-cyan-400">Optimal Configuration</h4>
-         <table class="config-table">
-          <tbody>
-           <tr>
-            <td>Gamma (γ)</td>
-            <td class="font-mono">0.001</td>
-           </tr>
-           <tr>
-            <td>C (Regularization)</td>
-            <td class="font-mono">100</td>
-           </tr>
-           <tr>
-            <td>Kernel</td>
-            <td class="font-mono">rbf</td>
-           </tr>
-           <tr>
-            <td>Preprocessing</td>
-            <td class="font-mono">PCA to 154 dims</td>
-           </tr>
-          </tbody>
-         </table>
-        </div>
-        <div class="space-y-3">
-         <div class="metric-box">
-          <div class="metric-value">
-           97.3%
-          </div>
-          <div class="metric-label">
-           Accuracy
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           2.7%
-          </div>
-          <div class="metric-label">
-           Error Rate
-          </div>
-         </div>
-         <div class="metric-box">
-          <div class="metric-value">
-           0.15s
-          </div>
-          <div class="metric-label">
-           Avg Prediction Time (per digit)
-          </div>
-         </div>
-        </div>
-       </div>
-       <div>
-        <h4 class="font-semibold mb-3 text-cyan-400">Implementation</h4>
-        <div class="code-block">
-         <div class="code-header mono">
-          Python - Handwritten Digit Recognition
-         </div>
-         <div class="code-content mono"><span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.svm</span> <span class="text-pink-400">import</span> SVC <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.decomposition</span> <span class="text-pink-400">import</span> PCA <span class="text-pink-400">from</span> <span class="text-cyan-400">sklearn.preprocessing</span> <span class="text-pink-400">import</span> StandardScaler <span class="text-gray-500"># Flatten 28x28 images to 784 dimensions</span> X_flat = X.reshape(X.shape[<span class="text-yellow-404">0</span>], -<span class="text-yellow-404">1</span>) <span class="text-gray-500"># Reduce dimensionality with PCA (99.5% variance)</span> pca = PCA(n_components=<span class="text-yellow-404">154</span>) X_pca = pca.fit_transform(X_flat) <span class="text-gray-500"># Scale and train RBF SVM for 10-class classification</span> scaler = StandardScaler() X_scaled = scaler.fit_transform(X_pca) digit_classifier = SVC( kernel=<span class="text-green-400">'rbf'</span>, gamma=<span class="text-yellow-404">0.001</span>, C=<span class="text-yellow-404">100</span>, decision_function_shape=<span class="text-green-400">'ovr'</span> <span class="text-gray-500"># One-vs-Rest</span> ) digit_classifier.fit(X_train, y_train) accuracy = digit_classifier.score(X_test, y_test) <span class="text-gray-500"># 97.3%</span>
-         </div>
-        </div>
-       </div>
-       <div class="grid md:grid-cols-2 gap-8">
-        <div>
-         <h4 class="font-semibold mb-4 text-green-400">Key Successes</h4>
-         <div class="success-item">
-          ✓ 97.3% accuracy is excellent for OCR applications
-         </div>
-         <div class="success-item">
-          ✓ PCA dimensionality reduction speeds up prediction
-         </div>
-         <div class="success-item">
-          ✓ Works well on diverse handwriting styles
-         </div>
-        </div>
-        <div>
-         <h4 class="font-semibold mb-4 text-yellow-400">Production Considerations</h4>
-         <div class="challenge-item">
-          ⚠ Deep learning (CNNs) now achieves 99%+ accuracy
-         </div>
-         <div class="challenge-item">
-          ⚠ RBF SVM slower than neural networks at inference
-         </div>
-         <div class="challenge-item">
-          ⚠ Still useful for resource-constrained environments
-         </div>
-        </div>
-       </div>
-      </div>
-     </div><!-- Comparison Table -->
-     <section class="card p-8">
-      <h2 class="text-2xl font-semibold mb-6">Quick Comparison: All 5 Case Studies</h2>
-      <div class="overflow-x-auto">
-       <table class="comparison-table">
-        <thead>
-         <tr>
-          <th>Domain</th>
-          <th>Problem</th>
-          <th>Optimal γ</th>
-          <th>Optimal C</th>
-          <th>Best Accuracy</th>
-          <th>Key Challenge</th>
-         </tr>
-        </thead>
-        <tbody>
-         <tr>
-          <td>🏥 Medical</td>
-          <td>Tumor Classification</td>
-          <td class="mono">0.001</td>
-          <td class="mono">100</td>
-          <td class="font-semibold text-green-400">97.2%</td>
-          <td>Feature scaling, imbalance</td>
-         </tr>
-         <tr>
-          <td>👤 Biometric</td>
-          <td>Face Verification</td>
-          <td class="mono">0.01</td>
-          <td class="mono">10</td>
-          <td class="font-semibold text-green-400">99.1%</td>
-          <td>Embedding quality, outliers</td>
-         </tr>
-         <tr>
-          <td>🔒 Security</td>
-          <td>Intrusion Detection</td>
-          <td class="mono">0.1</td>
-          <td class="mono">1000</td>
-          <td class="font-semibold text-green-400">98.4%</td>
-          <td>Class imbalance, evolution</td>
-         </tr>
-         <tr>
-          <td>📈 Finance</td>
-          <td>Vol. Prediction</td>
-          <td class="mono">0.05</td>
-          <td class="mono">10</td>
-          <td class="font-semibold text-yellow-400">72.3%</td>
-          <td>Regime changes, retraining</td>
-         </tr>
-         <tr>
-          <td>🔢 Vision</td>
-          <td>Digit Recognition</td>
-          <td class="mono">0.001</td>
-          <td class="mono">100</td>
-          <td class="font-semibold text-green-400">97.3%</td>
-          <td>DL outperforms, speed</td>
-         </tr>
-        </tbody>
-       </table>
-      </div>
-     </section><!-- Key Learnings -->
-     <section class="card p-8">
-      <h2 class="text-2xl font-semibold mb-6 gradient-text">Key Learnings Across Case Studies</h2>
-      <div class="grid md:grid-cols-2 gap-6">
-       <div class="bg-black/30 p-6 rounded-lg border border-cyan-500/20">
-        <h4 class="font-semibold mb-3 text-cyan-400 flex items-center gap-2"><span>💡</span> When RBF Excels</h4>
-        <ul class="space-y-2 text-sm">
-         <li>✓ Non-linearly separable data (medical, face recognition)</li>
-         <li>✓ High-dimensional feature spaces (face embeddings)</li>
-         <li>✓ Need for interpretable models with good accuracy</li>
-         <li>✓ Moderate dataset sizes (100s to 100,000s samples)</li>
-         <li>✓ Real-time inference requirements (smaller datasets)</li>
-        </ul>
-       </div>
-       <div class="bg-black/30 p-6 rounded-lg border border-pink-500/20">
-        <h4 class="font-semibold mb-3 text-pink-400 flex items-center gap-2"><span>⚠️</span> When RBF Struggles</h4>
-        <ul class="space-y-2 text-sm">
-         <li>✗ Very large datasets (&gt;1M samples) - slow training</li>
-         <li>✗ Linearly separable data - use linear kernel instead</li>
-         <li>✗ Extreme imbalance without careful tuning</li>
-         <li>✗ When interpretability of decision boundary matters</li>
-         <li>✗ Real-time, high-volume predictions (see deep learning)</li>
-        </ul>
-       </div>
-      </div>
-      <div class="mt-8 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 p-6 rounded-lg border border-cyan-500/30">
-       <h4 class="font-semibold mb-3 text-cyan-400">🎯 Gamma Selection Patterns</h4>
-       <p class="text-sm mb-4 leading-relaxed">Across all case studies, we see a clear pattern: <strong>low-dimensional, high-quality features use higher γ (0.05-0.1), while high-dimensional or variable-quality features use lower γ (0.001-0.01)</strong>. This makes sense—in high dimensions, you need wider Gaussian kernels to capture meaningful local structure.</p>
-       <div class="grid md:grid-cols-3 gap-3 mt-3">
-        <div class="bg-black/40 p-3 rounded mono text-sm"><strong class="text-cyan-400">Low γ (0.001-0.01)</strong>
-         <p class="text-xs mt-1 opacity-70">High-dim or variable: Medical (30 vars), Face (128 embeddings), OCR (154 PCA)</p>
-        </div>
-        <div class="bg-black/40 p-3 rounded mono text-sm"><strong class="text-cyan-400">Medium γ (0.05)</strong>
-         <p class="text-xs mt-1 opacity-70">Moderate-quality features: Finance (20 selected indicators)</p>
-        </div>
-        <div class="bg-black/40 p-3 rounded mono text-sm"><strong class="text-cyan-400">High γ (0.1)</strong>
-         <p class="text-xs mt-1 opacity-70">High-quality, low-dim: Intrusion detection (preprocessed features)</p>
-        </div>
-       </div>
-      </div>
-     </section><!-- Final Recommendation -->
-     <section class="card p-8 bg-gradient-to-r from-cyan-500/10 to-pink-500/10 border-2 border-cyan-500/40">
-      <h2 class="text-2xl font-semibold mb-4 gradient-text">When Should You Use RBF Kernels?</h2>
-      <div class="grid md:grid-cols-2 gap-6 mt-6">
-       <div>
-        <h4 class="font-semibold mb-3 text-green-400">✅ Use RBF When:</h4>
-        <ul class="space-y-2 text-sm">
-         <li>Data is non-linearly separable</li>
-         <li>Dataset size: 1,000 - 100,000 samples</li>
-         <li>You have time for hyperparameter tuning</li>
-         <li>You need good baseline performance</li>
-         <li>Interpretability of coefficients not critical</li>
-         <li>Real-time prediction not a hard requirement</li>
-        </ul>
-       </div>
-       <div>
-        <h4 class="font-semibold mb-3 text-yellow-400">❌ Consider Alternatives When:</h4>
-        <ul class="space-y-2 text-sm">
-         <li>Data is linearly separable (use linear kernel)</li>
-         <li>Dataset &gt; 1M samples (use SGDClassifier + RBF)</li>
-         <li>Need to understand feature importance</li>
-         <li>Predictions must be lightning-fast at scale</li>
-         <li>Data is high-dimensional &amp; sparse (use linear)</li>
-         <li>Working with large production systems (try deep learning)</li>
-        </ul>
-       </div>
-      </div>
-      <div class="mt-8 p-4 bg-black/40 rounded-lg border-l-4 border-cyan-400">
-       <p class="text-sm"><strong>Pro Tip:</strong> Always start with a linear kernel as a baseline. If it's not good enough, then try RBF. RBF adds complexity—only use it when you need the non-linearity it provides.</p>
-      </div>
-     </section><!-- Navigation Footer -->
-     <section class="text-center py-12">
-      <div class="flex justify-center gap-6 flex-wrap"><a href="index.html" class="px-8 py-3 rounded-lg border border-cyan-500 hover:bg-cyan-500/10 transition-colors"> ← Back to RBF Overview </a> <a href="#" class="px-8 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-pink-500 text-black font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"> Download Case Studies PDF </a>
-      </div>
-     </section><!-- Footer -->
-     <footer class="text-center py-8 opacity-60 text-sm">
-      <p>RBF Kernel Case Studies • Real-World Machine Learning Applications</p>
-      <p class="mt-2">Part of the RBF Kernel Learning Resource</p>
-     </footer>
     </div>
-   </div>
-  </div>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d0fc22346a69788',t:'MTc3MTYwODkwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  </nav>
+
+  <header id="home" class="hero">
+    <!-- Animated statistics bubbles -->
+    <span class="stat-float f1" aria-hidden="true"></span>
+    <span class="stat-float f2" aria-hidden="true"></span>
+    <span class="stat-float f3" aria-hidden="true"></span>
+    <span class="stat-float f4" aria-hidden="true"></span>
+    <span class="stat-float f5" aria-hidden="true"></span>
+
+    <div class="hero-content reveal">
+      <span class="pill">29 June 2026</span>
+      <h1>National Statistics Day 2026</h1>
+      <h2>Celebrating the Legacy of Professor Prasanta Chandra Mahalanobis</h2>
+      <p><strong>ICAR–Indian Agricultural Statistics Research Institute (IASRI), New Delhi</strong></p>
+      <p>Join us in recognizing how statistics powers agriculture, policy, science, and innovation.</p>
+      <div class="btn-row">
+        <a href="#mahalanobis" class="btn btn-primary"><i class="fa-solid fa-user-graduate" aria-hidden="true"></i> Learn About Mahalanobis</a>
+        <a href="#quiz" class="btn btn-secondary"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Take the Quiz</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Section 2: About National Statistics Day -->
+    <section id="about-day" class="section">
+      <div class="container reveal">
+        <h2 class="section-title">About National Statistics Day</h2>
+        <p class="section-subtitle">National Statistics Day is celebrated on <strong>29 June</strong> to honor Professor P. C. Mahalanobis and to promote statistical awareness in public life and national development.</p>
+
+        <div class="card-grid">
+          <article class="card"><span class="icon"><i class="fa-solid fa-seedling"></i></span><h3>Agriculture</h3><p>Statistics drives crop forecasting, yield optimization, and precision-farming decisions.</p></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-flask"></i></span><h3>Science</h3><p>Research design, reproducibility, and valid inference rely on robust statistical methods.</p></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-building-columns"></i></span><h3>Government Planning</h3><p>Evidence-based policies use survey data and statistical indicators for national priorities.</p></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-robot"></i></span><h3>Artificial Intelligence</h3><p>Probability, estimation, and uncertainty quantification are foundational to AI systems.</p></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-chart-line"></i></span><h3>Data Analytics</h3><p>Analytics transforms data into insights for strategic decisions in every sector.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: About P. C. Mahalanobis -->
+    <section id="mahalanobis" class="section" style="background:#fff;">
+      <div class="container reveal">
+        <h2 class="section-title">About P. C. Mahalanobis</h2>
+        <div class="profile-layout">
+          <figure class="profile-placeholder">
+            <!-- Easy-to-replace profile image placeholder -->
+            <img loading="lazy" src="https://placehold.co/600x700/dae8f4/0d1b2a?text=P.+C.+Mahalanobis+Photo" alt="Placeholder profile photo of Prasanta Chandra Mahalanobis" />
+          </figure>
+
+          <div>
+            <div class="card" style="margin-bottom:1rem;">
+              <h3>Prasanta Chandra Mahalanobis</h3>
+              <p><strong>Born:</strong> 29 June 1893</p>
+              <p>Founder of the Indian Statistical Institute and pioneer of modern statistics in India.</p>
+              <p>Creator of the <strong>Mahalanobis Distance</strong>, a core concept in multivariate analysis.</p>
+              <p><strong>Major Contributions:</strong> Sample surveys, statistical planning, national development, and statistical education.</p>
+            </div>
+
+            <div class="card" style="margin-bottom:1rem;">
+              <h4>Timeline</h4>
+              <div class="timeline" aria-label="Mahalanobis milestone timeline">
+                <div class="timeline-item"><strong>1893:</strong> Born in Kolkata.</div>
+                <div class="timeline-item"><strong>1931:</strong> Founded Indian Statistical Institute (ISI).</div>
+                <div class="timeline-item"><strong>1936:</strong> Introduced Mahalanobis Distance.</div>
+                <div class="timeline-item"><strong>1950s:</strong> Led large-scale sample survey methodology in India.</div>
+                <div class="timeline-item"><strong>National Planning Era:</strong> Advanced statistical planning for development.</div>
+              </div>
+            </div>
+
+            <blockquote class="highlight" aria-label="Famous quote">
+              <p style="margin:0;"><i class="fa-solid fa-quote-left" aria-hidden="true"></i> Statistics must be practical, relevant, and connected to national needs. <i class="fa-solid fa-quote-right" aria-hidden="true"></i></p>
+              <footer style="margin-top:0.6rem; color:var(--text-light);">— Attributed to P. C. Mahalanobis (replace with a verified archival quote before publication)</footer>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: About IASRI -->
+    <section id="iasri" class="section">
+      <div class="container reveal">
+        <h2 class="section-title">About ICAR-IASRI</h2>
+        <p class="section-subtitle"><strong>Indian Agricultural Statistics Research Institute</strong>, headquartered in New Delhi, works under the <strong>Indian Council of Agricultural Research (ICAR)</strong>.</p>
+
+        <div class="card-grid">
+          <article class="card"><span class="icon"><i class="fa-solid fa-wheat-awn"></i></span><h4>Agricultural Statistics</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-vial-circle-check"></i></span><h4>Experimental Design</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-dna"></i></span><h4>Bioinformatics</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-brain"></i></span><h4>Artificial Intelligence</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-gears"></i></span><h4>Machine Learning</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-chart-pie"></i></span><h4>Data Science</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-seedling"></i></span><h4>Statistical Genetics</h4></article>
+          <article class="card"><span class="icon"><i class="fa-solid fa-computer"></i></span><h4>Agricultural Informatics</h4></article>
+        </div>
+
+        <div class="highlight" style="margin-top:1rem;">
+          <h3 style="margin-top:0;">Mission Statement</h3>
+          <p style="margin-bottom:0;">To advance agricultural research and national food security by integrating statistics, computing, and data-driven innovation for impactful decision-making.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: About ICAR and IARI -->
+    <section class="section" style="background:#fff;">
+      <div class="container reveal">
+        <h2 class="section-title">About ICAR and IARI</h2>
+        <div class="card-grid">
+          <article class="card">
+            <img loading="lazy" src="https://placehold.co/320x120/e9f3fb/0f2e4d?text=ICAR+Official+Logo" alt="ICAR official logo placeholder" style="border-radius:10px; margin-bottom:0.8rem;" />
+            <h3>ICAR</h3>
+            <p>Apex agricultural research organization of India and the backbone of the National Agricultural Research System.</p>
+            <p>Leads agricultural <strong>research, education, and extension</strong> across the country.</p>
+          </article>
+          <article class="card">
+            <img loading="lazy" src="https://placehold.co/320x120/e9f3fb/0f2e4d?text=IARI+Official+Logo" alt="IARI official logo placeholder" style="border-radius:10px; margin-bottom:0.8rem;" />
+            <h3>IARI</h3>
+            <p>Indian Agricultural Research Institute, Pusa Campus, New Delhi.</p>
+            <p>Known for landmark <strong>Green Revolution</strong> contributions and long-standing leadership in agricultural innovation and education.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Quiz -->
+    <section id="quiz" class="section">
+      <div class="container reveal">
+        <h2 class="section-title">National Statistics Day Quiz</h2>
+        <div class="card" style="display:grid; gap:1rem; grid-template-columns: 1.3fr 1fr; align-items:center;">
+          <div>
+            <p>Test your knowledge about National Statistics Day, P. C. Mahalanobis, and the role of statistics in agriculture and science.</p>
+            <!-- Easy to edit quiz URL below in JavaScript constant: QUIZ_URL -->
+            <button id="startQuizBtn" class="btn btn-primary" type="button"><i class="fa-solid fa-play"></i> Start Quiz</button>
+          </div>
+          <img loading="lazy" src="https://placehold.co/650x420/def0ff/113556?text=Quiz+Illustration" alt="Quiz themed illustration placeholder" style="border-radius:12px;" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Photo Gallery -->
+    <section id="gallery" class="section" style="background:#fff;">
+      <div class="container reveal">
+        <h2 class="section-title">Photo Gallery</h2>
+        <p class="section-subtitle">Events, workshops, competitions, lectures, students, and campus decorations.</p>
+
+        <div class="gallery-grid">
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/cfe4f6/10324f?text=Event+1" alt="Events photo placeholder 1"><figcaption class="gallery-label">Events</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/d7e9f8/10324f?text=Workshop+1" alt="Workshops photo placeholder 1"><figcaption class="gallery-label">Workshops</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/e2eef9/10324f?text=Competition+1" alt="Competitions photo placeholder 1"><figcaption class="gallery-label">Competitions</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/def3e8/10324f?text=Lecture+1" alt="Lectures photo placeholder 1"><figcaption class="gallery-label">Lectures</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/f4e9df/10324f?text=Students+1" alt="Students photo placeholder 1"><figcaption class="gallery-label">Students</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/e0eaf7/10324f?text=Decorations+1" alt="Campus decorations photo placeholder 1"><figcaption class="gallery-label">Campus Decorations</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/cfe4f6/10324f?text=Event+2" alt="Events photo placeholder 2"><figcaption class="gallery-label">Events</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/d7e9f8/10324f?text=Workshop+2" alt="Workshops photo placeholder 2"><figcaption class="gallery-label">Workshops</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/e2eef9/10324f?text=Competition+2" alt="Competitions photo placeholder 2"><figcaption class="gallery-label">Competitions</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/def3e8/10324f?text=Lecture+2" alt="Lectures photo placeholder 2"><figcaption class="gallery-label">Lectures</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/f4e9df/10324f?text=Students+2" alt="Students photo placeholder 2"><figcaption class="gallery-label">Students</figcaption></figure>
+          <figure class="gallery-item"><img loading="lazy" src="https://placehold.co/600x450/e0eaf7/10324f?text=Decorations+2" alt="Campus decorations photo placeholder 2"><figcaption class="gallery-label">Campus Decorations</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lightbox popup -->
+    <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Image preview">
+      <button id="closeLightbox" aria-label="Close image preview"><i class="fa-solid fa-xmark"></i></button>
+      <img id="lightboxImage" alt="Expanded gallery image" />
+    </div>
+
+    <!-- Section 8: Video Gallery -->
+    <section id="videos" class="section">
+      <div class="container reveal">
+        <h2 class="section-title">Video Gallery</h2>
+        <div class="video-grid">
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="National Statistics Day Highlights" allowfullscreen></iframe></div><div class="video-body"><h3>National Statistics Day Highlights</h3><p>Highlights from previous celebrations and keynote moments.</p></div></article>
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/ysz5S6PUM-U" title="Mahalanobis Lecture" allowfullscreen></iframe></div><div class="video-body"><h3>Mahalanobis Lecture</h3><p>A lecture on the legacy of Professor P. C. Mahalanobis.</p></div></article>
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/jNQXAC9IVRw" title="IASRI Research Overview" allowfullscreen></iframe></div><div class="video-body"><h3>IASRI Research Overview</h3><p>Institutional overview of current research initiatives.</p></div></article>
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/tgbNymZ7vqY" title="Student Activities" allowfullscreen></iframe></div><div class="video-body"><h3>Student Activities</h3><p>Student-led events and participation activities.</p></div></article>
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/aqz-KE-bpKQ" title="Data Science in Agriculture" allowfullscreen></iframe></div><div class="video-body"><h3>Data Science in Agriculture</h3><p>How analytics supports modern agriculture and policy.</p></div></article>
+          <article class="video-card"><div class="video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/oUFJJNQGwhk" title="Event Recap" allowfullscreen></iframe></div><div class="video-body"><h3>Event Recap</h3><p>Summary video from the National Statistics Day program.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: Statistics Facts Carousel -->
+    <section class="section" style="background:#fff;">
+      <div class="container reveal">
+        <h2 class="section-title">Statistics Facts Carousel</h2>
+        <div class="facts-carousel" aria-live="polite">
+          <p id="factText" class="fact-text">Statistics helps convert data into decisions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 10: Event Schedule -->
+    <section class="section">
+      <div class="container reveal">
+        <h2 class="section-title">Event Schedule</h2>
+        <div class="card">
+          <div class="timeline" aria-label="National Statistics Day event schedule timeline">
+            <div class="timeline-item"><strong>09:30 AM:</strong> Inauguration</div>
+            <div class="timeline-item"><strong>10:30 AM:</strong> Expert Lectures</div>
+            <div class="timeline-item"><strong>12:30 PM:</strong> Quiz Competition</div>
+            <div class="timeline-item"><strong>02:00 PM:</strong> Poster Presentation</div>
+            <div class="timeline-item"><strong>03:30 PM:</strong> Student Activities</div>
+            <div class="timeline-item"><strong>05:00 PM:</strong> Valedictory Function</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 11: Contact -->
+    <section id="contact" class="section" style="background:#fff;">
+      <div class="container reveal">
+        <h2 class="section-title">Contact</h2>
+        <div class="contact-grid">
+          <article class="card">
+            <h3>ICAR–IASRI</h3>
+            <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Library Avenue, Pusa Campus<br />New Delhi – 110012</p>
+            <!-- Replace email and phone placeholders with official IASRI contact details -->
+            <p><i class="fa-solid fa-envelope" aria-hidden="true"></i> Email: <a href="mailto:info@example.org">info@example.org</a></p>
+            <p><i class="fa-solid fa-phone" aria-hidden="true"></i> Phone: <a href="tel:+910000000000">+91-00000-00000</a></p>
+          </article>
+
+          <article class="card">
+            <h3>Google Maps (Placeholder)</h3>
+            <!-- Replace URL below with official embeddable map when available -->
+            <iframe loading="lazy" title="IASRI location map placeholder" src="https://maps.google.com/maps?q=New%20Delhi&t=&z=12&ie=UTF8&iwloc=&output=embed" style="width:100%; height:260px; border:0; border-radius:12px;"></iframe>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Section 12: Footer -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h3 style="margin-top:0; color:#fff;">National Statistics Day 2026</h3>
+        <p>ICAR–IASRI, New Delhi</p>
+        <p style="margin-bottom:0;">Professional celebration page for a national-level scientific event.</p>
+      </div>
+      <div>
+        <h4 style="margin-top:0; color:#fff;">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#about-day">About Day</a></li>
+          <li><a href="#mahalanobis">About Mahalanobis</a></li>
+          <li><a href="#iasri">About IASRI</a></li>
+          <li><a href="#quiz">Quiz</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="margin-top:0; color:#fff;">Social Media</h4>
+        <div class="social" aria-label="Social media links">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <p style="width:var(--container); margin:1.2rem auto 0; border-top:1px solid rgba(255,255,255,0.2); padding-top:0.8rem; font-size:0.9rem;">© 2026 National Statistics Day | ICAR–IASRI. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // ================================
+    // Easy-to-edit external quiz URL
+    // ================================
+    const QUIZ_URL = "https://example.com/quiz";
+
+    // Quiz button behavior: opens quiz in new tab
+    const startQuizBtn = document.getElementById("startQuizBtn");
+    if (startQuizBtn) {
+      startQuizBtn.addEventListener("click", () => {
+        if (QUIZ_URL === "https://example.com/quiz") {
+          alert("Please update QUIZ_URL in index.html with the official quiz link.");
+          return;
+        }
+        window.open(QUIZ_URL, "_blank", "noopener,noreferrer");
+      });
+    }
+
+    // ================================
+    // Gallery Lightbox functionality
+    // ================================
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightboxImage");
+    const closeLightbox = document.getElementById("closeLightbox");
+
+    document.querySelectorAll(".gallery-item img").forEach((img) => {
+      img.addEventListener("click", () => {
+        lightboxImage.src = img.src;
+        lightboxImage.alt = img.alt;
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+      });
+    });
+
+    const hideLightbox = () => {
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+      lightboxImage.src = "";
+    };
+
+    closeLightbox.addEventListener("click", hideLightbox);
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) hideLightbox();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && lightbox.classList.contains("open")) hideLightbox();
+    });
+
+    // ================================
+    // Auto-rotating facts carousel (5s)
+    // ================================
+    const facts = [
+      "Statistics helps convert data into decisions.",
+      "Mahalanobis Distance is widely used in multivariate analysis.",
+      "Sample surveys revolutionized data collection.",
+      "Statistics is fundamental to AI and Machine Learning."
+    ];
+
+    let factIndex = 0;
+    const factText = document.getElementById("factText");
+
+    setInterval(() => {
+      factIndex = (factIndex + 1) % facts.length;
+      factText.textContent = facts[factIndex];
+    }, 5000);
+
+    // ================================
+    // Fade-in animation with Intersection Observer
+    // ================================
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  </script>
+</body>
 </html>

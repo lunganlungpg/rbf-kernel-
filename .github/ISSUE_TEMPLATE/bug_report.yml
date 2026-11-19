@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in the package, examples or website doesn't work
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal code or steps to reproduce
+      render: python
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "OS, Python version, numpy / scikit-learn versions, or browser"

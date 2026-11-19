@@ -48,7 +48,7 @@ nav.top .wrap{display:flex;align-items:center;gap:20px;height:56px}
 nav.top .links{display:flex;gap:18px;margin-left:auto;align-items:center;overflow-x:auto;scrollbar-width:none}
 nav.top .links a{color:var(--muted);text-decoration:none;font-size:.92rem;white-space:nowrap}
 nav.top .links a:hover{color:var(--text)}
-#theme{background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;width:34px;height:34px;cursor:pointer;flex:none}
+#theme{display:grid;place-items:center;background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;width:34px;height:34px;cursor:pointer;flex:none}
 @media (max-width:760px){nav.top .links a.opt{display:none}}
 
 /* hero */
@@ -136,7 +136,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
       <a href="case-studies.html">Case studies</a>
       <a href="https://github.com/lunganlungpg/rbf-kernel-">GitHub</a>
     </div>
-    <button id="theme" title="Toggle light/dark theme" aria-label="Toggle theme">◐</button>
+    <button id="theme" title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
   </div>
 </nav>
 
@@ -407,7 +407,9 @@ const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[
 /* ---------- responsive canvas ---------- */
 function fit(cv) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const w = cv.clientWidth, h = parseInt(cv.getAttribute("height"), 10);
+  // Remember the CSS height once: cv.height is overwritten below with device pixels.
+  if (!cv.dataset.h) cv.dataset.h = cv.getAttribute("height");
+  const w = cv.clientWidth, h = parseInt(cv.dataset.h, 10);
   cv.style.height = h + "px";
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
   const ctx = cv.getContext("2d");

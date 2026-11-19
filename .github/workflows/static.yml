@@ -1,8 +1,10 @@
-name: Deploy static content to Pages
+# Deploys the interactive site in ./site to GitHub Pages.
+name: Deploy site to Pages
 
 on:
   push:
     branches: ["main"]
+    paths: ["site/**", ".github/workflows/static.yml"]
   workflow_dispatch:
 
 permissions:
@@ -28,7 +30,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: "site"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

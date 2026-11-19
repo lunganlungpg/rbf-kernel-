@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rbf-kernel"
+version = "1.0.0"
+description = "Learn, visualize and use RBF (Gaussian) kernels: readable NumPy implementations, tuning helpers and reproducible examples."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "lunganlungpg" }]
+keywords = ["rbf", "gaussian kernel", "svm", "kernel methods", "machine learning", "education"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["numpy>=1.22", "scipy>=1.8", "scikit-learn>=1.1"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.5"]
+dev = ["matplotlib>=3.5", "pytest>=7", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://lunganlungpg.github.io/rbf-kernel-/"
+Source = "https://github.com/lunganlungpg/rbf-kernel-"
+
+[tool.setuptools]
+packages = ["rbf_kernel"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--doctest-modules --doctest-glob=*.md -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]

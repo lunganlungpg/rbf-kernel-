@@ -1,0 +1,10 @@
+name: Idea or confusing explanation
+description: Suggest a visualization, example or clearer explanation
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would make this more useful?
+    validations:
+      required: true

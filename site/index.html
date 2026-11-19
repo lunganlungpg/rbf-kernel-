@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RBF Kernel Explorer</title>
+<meta name="description" content="An interactive guide to the RBF (Gaussian) kernel: see how gamma shapes similarity, train a kernel classifier in your browser, and learn how to tune RBF SVMs properly.">
+<meta property="og:title" content="RBF Kernel Explorer">
+<meta property="og:description" content="Interactive guide to the RBF (Gaussian) kernel, with a live kernel classifier playground.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3CradialGradient id='g'%3E%3Cstop offset='0' stop-color='%2306b6d4'/%3E%3Cstop offset='1' stop-color='%2306b6d4' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='15' fill='url(%23g)'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%230e7490'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f8fb; --surface:#ffffff; --surface-2:#f0f3f8; --border:#dde3ec;
+  --text:#121826; --muted:#5b6578; --accent:#0e7490; --accent-soft:#cff4fc;
+  --a:#d9480f; --b:#1c64d1; --good:#2b8a3e; --warn:#b35c00; --code-bg:#0f172a; --code-text:#e2e8f0;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0f17; --surface:#121826; --surface-2:#18202f; --border:#263045;
+    --text:#e6e9f0; --muted:#97a1b5; --accent:#22d3ee; --accent-soft:#083344;
+    --a:#ff8a4c; --b:#5c9dff; --good:#51cf66; --warn:#ffa94d; --code-bg:#070a10; --code-text:#e2e8f0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0f17; --surface:#121826; --surface-2:#18202f; --border:#263045;
+  --text:#e6e9f0; --muted:#97a1b5; --accent:#22d3ee; --accent-soft:#083344;
+  --a:#ff8a4c; --b:#5c9dff; --good:#51cf66; --warn:#ffa94d; --code-bg:#070a10; --code-text:#e2e8f0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+:not(pre)>code{background:var(--surface-2);border:1px solid var(--border);padding:.05em .35em;border-radius:5px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+@media (max-width:480px){.wrap{padding:0 16px}}
+
+/* nav */
+nav.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+nav.top .wrap{display:flex;align-items:center;gap:20px;height:56px}
+.brand{font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand .dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,var(--accent) 30%,transparent 72%);box-shadow:0 0 0 4px var(--accent-soft)}
+nav.top .links{display:flex;gap:18px;margin-left:auto;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.top .links a{color:var(--muted);text-decoration:none;font-size:.92rem;white-space:nowrap}
+nav.top .links a:hover{color:var(--text)}
+#theme{background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;width:34px;height:34px;cursor:pointer;flex:none}
+@media (max-width:760px){nav.top .links a.opt{display:none}}
+
+/* hero */
+header.hero{padding:64px 0 36px}
+.eyebrow{color:var(--accent);font-weight:600;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:.3em 0 .4em;letter-spacing:-.02em}
+.lede{font-size:1.15rem;color:var(--muted);max-width:720px;margin:0}
+.formula{margin:28px 0;display:inline-block;padding:18px 26px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);font:600 clamp(1.05rem,3vw,1.5rem)/1.3 "JetBrains Mono",monospace;max-width:100%;overflow-x:auto}
+.formula .g{color:var(--a)} .formula .d{color:var(--b)}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;font-size:.95rem;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#04131a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#04131a}}
+.btn:hover{filter:brightness(1.05)}
+
+/* sections */
+section{padding:44px 0;border-top:1px solid var(--border)}
+h2{font-size:clamp(1.4rem,3vw,1.9rem);margin:0 0 .3em;letter-spacing:-.01em}
+h2 .n{color:var(--accent);font-family:"JetBrains Mono",monospace;font-size:.8em;margin-right:.4em}
+h3{font-size:1.1rem;margin:0 0 .4em}
+.sub{color:var(--muted);margin:0 0 24px;max-width:760px}
+.grid{display:grid;gap:18px}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.card p{margin:.2em 0 0;color:var(--muted);font-size:.95rem}
+.sym{font:600 1.3rem "JetBrains Mono",monospace}
+
+/* interactive panels */
+.panel{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.panel{grid-template-columns:1fr}}
+.stage{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow);position:relative}
+.stage canvas{display:block;width:100%;border-radius:8px;touch-action:none}
+.stage .hint{position:absolute;left:20px;bottom:18px;font-size:.78rem;background:color-mix(in srgb,var(--surface) 85%,transparent);padding:3px 8px;border-radius:6px;color:var(--muted);pointer-events:none}
+.controls{display:flex;flex-direction:column;gap:16px}
+.ctrl label{display:flex;justify-content:space-between;font-weight:600;font-size:.92rem;margin-bottom:6px}
+.ctrl label output{font-family:"JetBrains Mono",monospace;color:var(--accent)}
+.ctrl small{color:var(--muted);display:flex;justify-content:space-between;font-size:.78rem}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font:700 1.35rem "JetBrains Mono",monospace}
+.stat span{font-size:.78rem;color:var(--muted)}
+.note{background:var(--accent-soft);border-radius:10px;padding:12px 14px;font-size:.92rem}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font:500 .88rem Inter,sans-serif}
+.seg button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:700}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+.legend{display:flex;gap:14px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
+.verdict{font-weight:600}
+.verdict.good{color:var(--good)} .verdict.warn{color:var(--warn)}
+
+/* tables, code */
+.tbl{width:100%;border-collapse:collapse;font-size:.94rem;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.tbl th,.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.tbl th{background:var(--surface-2);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.tbl tr:last-child td{border-bottom:none}
+.scroll{overflow-x:auto;border-radius:12px}
+.code{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:18px 18px;overflow-x:auto;font:13.5px/1.6 "JetBrains Mono",monospace;margin:0}
+.code .k{color:#f472b6}.code .s{color:#86efac}.code .c{color:#64748b}.code .n{color:#fbbf24}.code .f{color:#67e8f9}
+.copy{position:absolute;top:10px;right:10px;background:#1e293b;color:#cbd5e1;border:1px solid #334155;border-radius:7px;font:12px Inter,sans-serif;padding:4px 10px;cursor:pointer}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.check li{padding:12px 14px 12px 42px;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.check li::before{position:absolute;left:14px;top:11px;font-weight:700}
+.check.do li::before{content:"✓";color:var(--good)}
+.check.dont li::before{content:"✗";color:var(--a)}
+.steps{counter-reset:s;display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.steps .card{counter-increment:s;position:relative;padding-top:44px}
+.steps .card::before{content:counter(s);position:absolute;top:14px;left:20px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--surface);font:700 .8rem/24px Inter;text-align:center}
+footer{padding:40px 0 60px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--border)}
+footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<nav class="top" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#"><span class="dot"></span>RBF Kernel Explorer</a>
+    <div class="links">
+      <a class="opt" href="#profile">Profile</a>
+      <a class="opt" href="#map">Similarity map</a>
+      <a href="#playground">Playground</a>
+      <a class="opt" href="#tuning">Tuning</a>
+      <a href="case-studies.html">Case studies</a>
+      <a href="https://github.com/lunganlungpg/rbf-kernel-">GitHub</a>
+    </div>
+    <button id="theme" title="Toggle light/dark theme" aria-label="Toggle theme">◐</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Interactive guide</div>
+    <h1>The RBF kernel, explained by playing with it</h1>
+    <p class="lede">The Radial Basis Function (Gaussian) kernel turns distance into similarity. That one idea powers non-linear SVMs, Gaussian processes and kernel ridge regression. Move the sliders, drag the points and train a classifier in your browser to see how it works.</p>
+    <div class="formula" aria-label="K of x and x prime equals exp of minus gamma times the squared distance between x and x prime">
+      K(x, x′) = exp(−<span class="g">γ</span> · <span class="d">‖x − x′‖²</span>)
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#playground">Open the playground →</a>
+      <a class="btn" href="#tuning">How to tune γ and C</a>
+      <a class="btn" href="https://github.com/lunganlungpg/rbf-kernel-#quick-start">Python package</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="formula">
+  <div class="wrap">
+    <h2><span class="n">01</span>What each part means</h2>
+    <p class="sub">Three pieces, one job: give two points a similarity score between 0 and 1.</p>
+    <div class="grid g3">
+      <div class="card"><div class="sym" style="color:var(--b)">‖x − x′‖²</div><h3>Squared distance</h3><p>How far apart the two points are in feature space. Because it depends only on distance, the kernel is <em>radial</em>: every direction counts equally, which is why feature scaling matters.</p></div>
+      <div class="card"><div class="sym" style="color:var(--a)">γ</div><h3>Gamma, the inverse width</h3><p>Controls how fast similarity decays. Large γ means only very close points count as similar. It relates to the Gaussian width σ by <code>γ = 1 / (2σ²)</code>.</p></div>
+      <div class="card"><div class="sym">exp(−·)</div><h3>Exponential decay</h3><p>Maps distance 0 to similarity 1 and large distances to almost 0. The result is always in (0, 1], symmetric, and forms a positive-definite Gram matrix, so it is a valid kernel.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="profile">
+  <div class="wrap">
+    <h2><span class="n">02</span>The kernel profile</h2>
+    <p class="sub">How similarity falls with distance. The coloured curve is your γ. The faint curves are γ = 0.1, 1 and 10 for reference.</p>
+    <div class="panel">
+      <div class="stage"><canvas id="profile-cv" height="320" aria-label="Plot of kernel value against distance"></canvas></div>
+      <div class="controls">
+        <div class="ctrl">
+          <label for="p-gamma">Gamma (γ) <output id="p-gamma-out">1.00</output></label>
+          <input id="p-gamma" type="range" min="-2" max="2" step="0.01" value="0">
+          <small><span>0.01 · wide</span><span>100 · narrow</span></small>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="p-sigma">0.71</b><span>width σ = √(1/2γ)</span></div>
+          <div class="stat"><b id="p-half">0.83</b><span>distance where K = 0.5</span></div>
+          <div class="stat"><b id="p-k1">0.37</b><span>K at distance 1</span></div>
+          <div class="stat"><b id="p-k2">0.02</b><span>K at distance 2</span></div>
+        </div>
+        <p class="note">Rule of thumb: points further apart than about <b>3σ</b> have essentially zero similarity. They have no influence on each other in the model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="map">
+  <div class="wrap">
+    <h2><span class="n">03</span>Similarity map</h2>
+    <p class="sub">Every pixel is coloured by its similarity to the reference point. Drag the point and hover anywhere to read the kernel value. Grid lines are 1 unit apart.</p>
+    <div class="panel">
+      <div class="stage"><canvas id="map-cv" height="360" aria-label="Heatmap of kernel similarity to a draggable reference point"></canvas><span class="hint" id="map-hint">Drag the white point · hover to read K</span></div>
+      <div class="controls">
+        <div class="ctrl">
+          <label for="m-gamma">Gamma (γ) <output id="m-gamma-out">0.50</output></label>
+          <input id="m-gamma" type="range" min="-2" max="1.3" step="0.01" value="-0.301">
+          <small><span>0.01</span><span>20</span></small>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="m-k">—</b><span>K(reference, cursor)</span></div>
+          <div class="stat"><b id="m-d">—</b><span>distance to cursor</span></div>
+        </div>
+        <p class="note" id="m-desc"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="playground">
+  <div class="wrap">
+    <h2><span class="n">04</span>Kernel classifier playground</h2>
+    <p class="sub">A real kernel model (kernel ridge classification) trains live as you change things. The decision function is a weighted sum of Gaussian bumps, one on each training point: <code>f(x) = Σ αᵢ K(x, xᵢ)</code>. Compare <b>training accuracy</b> with <b>leave-one-out accuracy</b> to spot overfitting.</p>
+    <div class="panel">
+      <div class="stage">
+        <canvas id="pg-cv" height="420" aria-label="Classifier playground. Click to add points."></canvas>
+        <span class="hint">Click to add a point · Shift-click for the other class · Right-click to remove</span>
+      </div>
+      <div class="controls">
+        <div class="ctrl">
+          <label>Dataset</label>
+          <div class="seg" id="pg-presets">
+            <button data-p="moons" aria-pressed="true">Moons</button>
+            <button data-p="circles">Circles</button>
+            <button data-p="xor">XOR</button>
+            <button data-p="blobs">Blobs</button>
+            <button data-p="clear">Clear</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>Click adds</label>
+          <div class="seg" id="pg-class">
+            <button data-c="1" aria-pressed="true"><span class="sw" style="background:var(--a)"></span>Class A</button>
+            <button data-c="-1"><span class="sw" style="background:var(--b)"></span>Class B</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label for="pg-gamma">Gamma (γ) <output id="pg-gamma-out">1.00</output></label>
+          <input id="pg-gamma" type="range" min="-2" max="2.3" step="0.01" value="0">
+          <small><span>0.01 · smooth</span><span>200 · wiggly</span></small>
+        </div>
+        <div class="ctrl">
+          <label for="pg-lambda">Regularization (λ) <output id="pg-lambda-out">0.100</output></label>
+          <input id="pg-lambda" type="range" min="-4" max="1" step="0.01" value="-1">
+          <small><span>0.0001 · fit every point</span><span>10 · very smooth</span></small>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="pg-train">—</b><span>training accuracy</span></div>
+          <div class="stat"><b id="pg-loo">—</b><span>leave-one-out accuracy</span></div>
+        </div>
+        <div class="verdict" id="pg-verdict" aria-live="polite"></div>
+        <div class="seg">
+          <button id="pg-noise">Re-sample data</button>
+          <button id="pg-bumps" aria-pressed="false">Show bumps</button>
+        </div>
+        <div class="legend"><span><span class="sw" style="background:var(--a)"></span>A (+1)</span><span><span class="sw" style="background:var(--b)"></span>B (−1)</span><span>— decision boundary f(x)=0</span></div>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:18px">λ here plays the role of <code>1/C</code> in an SVM: small λ (large C) trusts every point; large λ (small C) prefers a smoother function. Try Moons at γ ≈ 1, then push γ above 50 and λ down to 0.001: training accuracy hits 100% while leave-one-out accuracy drops. Then slide γ down to 0.01 to see underfitting.</p>
+  </div>
+</section>
+
+<section id="trick">
+  <div class="wrap">
+    <h2><span class="n">05</span>Why it works: the kernel trick</h2>
+    <p class="sub">Many algorithms (SVMs, ridge regression, PCA) only ever need dot products between points. Replace those dot products with K and you get a non-linear model without building the features yourself.</p>
+    <div class="steps">
+      <div class="card"><h3>Input space</h3><p>Classes may be tangled, like two interleaved moons, so no straight line separates them.</p></div>
+      <div class="card"><h3>Implicit feature map φ</h3><p>The RBF kernel equals a dot product <code>⟨φ(x), φ(x′)⟩</code> in an infinite-dimensional space. You never compute φ.</p></div>
+      <div class="card"><h3>Linear model there</h3><p>A flat hyperplane in that space separates the classes. The solver only touches the n×n matrix of K values.</p></div>
+      <div class="card"><h3>Curved boundary here</h3><p>Mapped back, the hyperplane becomes the smooth, curved boundary you saw in the playground.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="tuning">
+  <div class="wrap">
+    <h2><span class="n">06</span>Tuning γ and C properly</h2>
+    <p class="sub">γ and C interact, so always search them together on a log scale, with scaling inside a pipeline so cross-validation stays honest.</p>
+    <div class="scroll">
+    <table class="tbl">
+      <thead><tr><th>Setting</th><th>What you see</th><th>Symptom</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>γ too small</td><td>Near-linear, over-smooth boundary</td><td>Train and test accuracy both low (underfitting)</td><td>Increase γ, or increase C</td></tr>
+        <tr><td>γ too large</td><td>Islands around single points</td><td>Train ≈ 100%, test much lower (overfitting)</td><td>Decrease γ, or decrease C</td></tr>
+        <tr><td>C too small</td><td>Wide margin, many misclassified points</td><td>Underfitting, many support vectors</td><td>Increase C</td></tr>
+        <tr><td>C too large</td><td>Boundary bends to fit every point</td><td>Overfitting, sensitive to noise</td><td>Decrease C</td></tr>
+        <tr><td>Good start</td><td colspan="3"><code>gamma="scale"</code> (= 1/n_features on standardized data) and <code>C=1</code>, then search γ and C each over about 10⁻³…10³.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3 style="margin-top:28px">A leak-free tuning recipe</h3>
+<pre class="code" id="code-tune"><button class="copy">Copy</button><span class="k">from</span> sklearn.model_selection <span class="k">import</span> GridSearchCV, StratifiedKFold
+<span class="k">from</span> sklearn.pipeline <span class="k">import</span> make_pipeline
+<span class="k">from</span> sklearn.preprocessing <span class="k">import</span> StandardScaler
+<span class="k">from</span> sklearn.svm <span class="k">import</span> SVC
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="c"># Scaler INSIDE the pipeline: it is re-fit on each training fold (no leakage)</span>
+pipe = <span class="f">make_pipeline</span>(<span class="f">StandardScaler</span>(), <span class="f">SVC</span>(kernel=<span class="s">"rbf"</span>))
+grid = {
+    <span class="s">"svc__gamma"</span>: np.<span class="f">logspace</span>(<span class="n">-3</span>, <span class="n">2</span>, <span class="n">11</span>),
+    <span class="s">"svc__C"</span>:     np.<span class="f">logspace</span>(<span class="n">-2</span>, <span class="n">3</span>, <span class="n">11</span>),
+}
+search = <span class="f">GridSearchCV</span>(pipe, grid, cv=<span class="f">StratifiedKFold</span>(<span class="n">5</span>, shuffle=<span class="k">True</span>, random_state=<span class="n">0</span>), n_jobs=<span class="n">-1</span>)
+search.<span class="f">fit</span>(X_train, y_train)
+<span class="f">print</span>(search.best_params_, search.best_score_)
+<span class="f">print</span>(<span class="s">"held-out test:"</span>, search.<span class="f">score</span>(X_test, y_test))</pre>
+
+    <div class="grid g3" style="margin-top:28px">
+      <div>
+        <h3>Do</h3>
+        <ul class="check do">
+          <li>Standardize features. The kernel uses raw distances.</li>
+          <li>Search γ and C together on a log grid.</li>
+          <li>Keep a test set you never touch while tuning.</li>
+          <li>Use class weights or AUC/recall when classes are imbalanced.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Don't</h3>
+        <ul class="check dont">
+          <li>Fit the scaler on all data before splitting (leakage).</li>
+          <li>Judge a model by training accuracy.</li>
+          <li>Run an exact kernel SVM on millions of rows. Use approximations.</li>
+          <li>Assume RBF beats linear on very high-dimensional sparse text.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>When it is a good choice</h3>
+        <ul class="check do">
+          <li>Non-linear structure, moderate feature count.</li>
+          <li>Up to roughly 10⁴–10⁵ samples for exact SVMs.</li>
+          <li>Larger data: Nyström or Random Fourier Features plus a linear model.</li>
+          <li>Smooth regression and Gaussian-process style problems.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="python">
+  <div class="wrap">
+    <h2><span class="n">07</span>Use it in Python</h2>
+    <p class="sub">This repository ships a small, tested package with readable NumPy implementations (RBF kernel, gamma heuristics, kernel ridge, Random Fourier Features, Nyström) and reproducible examples.</p>
+<pre class="code"><button class="copy">Copy</button><span class="c"># pip install "git+https://github.com/lunganlungpg/rbf-kernel-.git"</span>
+<span class="k">from</span> rbf_kernel <span class="k">import</span> rbf_kernel, median_heuristic_gamma, tune_rbf_svc
+
+K = <span class="f">rbf_kernel</span>(X, gamma=<span class="n">0.5</span>)                  <span class="c"># n×n Gram matrix</span>
+g = <span class="f">median_heuristic_gamma</span>(X)                 <span class="c"># data-driven starting gamma</span>
+search = <span class="f">tune_rbf_svc</span>(X_train, y_train)        <span class="c"># scaled SVC + stratified grid search</span>
+<span class="f">print</span>(search.best_params_, search.<span class="f">score</span>(X_test, y_test))</pre>
+    <div class="cta" style="margin-top:20px">
+      <a class="btn primary" href="https://github.com/lunganlungpg/rbf-kernel-#quick-start">Read the quick start</a>
+      <a class="btn" href="https://github.com/lunganlungpg/rbf-kernel-/tree/main/examples">Browse examples</a>
+      <a class="btn" href="case-studies.html">Domain case studies</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>RBF Kernel Explorer · MIT licensed · <a href="https://github.com/lunganlungpg/rbf-kernel-">source on GitHub</a></span>
+    <span>Further reading: <a href="https://scikit-learn.org/stable/modules/svm.html">scikit-learn SVM guide</a> · <a href="https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi &amp; Recht (2007)</a></span>
+  </div>
+</footer>
+
+<script>
+(() => {
+"use strict";
+const $ = (s) => document.querySelector(s);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const logv = (el) => Math.pow(10, parseFloat(el.value));
+const fmt = (x) => x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x.toFixed(2);
+
+/* ---------- theme ---------- */
+try { const t = localStorage.getItem("rbf-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+$("#theme").addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("rbf-theme", next); } catch (e) {}
+  redrawAll();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => redrawAll());
+
+/* ---------- colour helpers ---------- */
+function hexToRgb(h) {
+  h = h.replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const n = parseInt(h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+/* ---------- responsive canvas ---------- */
+function fit(cv) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = cv.clientWidth, h = parseInt(cv.getAttribute("height"), 10);
+  cv.style.height = h + "px";
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h, dpr };
+}
+
+/* ======================= 02 · profile ======================= */
+const pCv = $("#profile-cv"), pG = $("#p-gamma");
+function drawProfile() {
+  const { ctx, w, h } = fit(pCv);
+  const g = logv(pG);
+  const m = { l: 44, r: 14, t: 14, b: 36 }, W = w - m.l - m.r, H = h - m.t - m.b, dMax = 4;
+  const X = (d) => m.l + (d / dMax) * W, Y = (k) => m.t + (1 - k) * H;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "12px Inter, sans-serif"; ctx.fillStyle = css("--muted"); ctx.strokeStyle = css("--border"); ctx.lineWidth = 1;
+  for (let d = 0; d <= dMax; d += 0.5) { ctx.beginPath(); ctx.moveTo(X(d), m.t); ctx.lineTo(X(d), m.t + H); ctx.stroke(); if (d % 1 === 0) ctx.fillText(d, X(d) - 3, h - 18); }
+  for (let k = 0; k <= 1.001; k += 0.25) { ctx.beginPath(); ctx.moveTo(m.l, Y(k)); ctx.lineTo(m.l + W, Y(k)); ctx.stroke(); ctx.fillText(k.toFixed(2), 6, Y(k) + 4); }
+  ctx.fillText("distance ‖x − x′‖", m.l + W / 2 - 50, h - 3);
+  const curve = (gg, color, lw, dash) => {
+    ctx.beginPath(); ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.lineWidth = lw;
+    for (let i = 0; i <= 300; i++) { const d = (i / 300) * dMax, k = Math.exp(-gg * d * d); i ? ctx.lineTo(X(d), Y(k)) : ctx.moveTo(X(d), Y(k)); }
+    ctx.stroke(); ctx.setLineDash([]);
+  };
+  [0.1, 1, 10].forEach((gg) => {
+    curve(gg, css("--muted"), 1, [4, 4]);
+    const d = Math.min(Math.sqrt(Math.log(2) / gg), dMax - 0.2);
+    ctx.fillStyle = css("--muted"); ctx.fillText("γ=" + gg, X(d) + 6, Y(Math.exp(-gg * d * d)) - 4);
+  });
+  curve(g, css("--a"), 3);
+  const half = Math.sqrt(Math.log(2) / g);
+  if (half < dMax) {
+    ctx.fillStyle = css("--a"); ctx.beginPath(); ctx.arc(X(half), Y(0.5), 5, 0, 7); ctx.fill();
+  }
+  $("#p-gamma-out").textContent = fmt(g);
+  $("#p-sigma").textContent = Math.sqrt(1 / (2 * g)).toFixed(2);
+  $("#p-half").textContent = half.toFixed(2);
+  $("#p-k1").textContent = Math.exp(-g).toFixed(3);
+  $("#p-k2").textContent = Math.exp(-4 * g).toFixed(3);
+}
+pG.addEventListener("input", drawProfile);
+
+/* ======================= 03 · similarity map ======================= */
+const mCv = $("#map-cv"), mG = $("#m-gamma");
+const mapState = { ref: [0, 0], drag: false, scale: 60 };
+function mapCoords(e) {
+  const r = mCv.getBoundingClientRect();
+  return [(e.clientX - r.left - r.width / 2) / mapState.scale, -(e.clientY - r.top - r.height / 2) / mapState.scale];
+}
+function drawMap() {
+  const { ctx, w, h } = fit(mCv);
+  const g = logv(mG), s = mapState.scale = Math.max(40, Math.min(70, w / 9));
+  const low = hexToRgb(css("--surface")), high = hexToRgb(css("--accent"));
+  const step = 3, cw = Math.ceil(w / step), ch = Math.ceil(h / step);
+  const img = ctx.createImageData(cw, ch);
+  for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) {
+    const x = (i * step - w / 2) / s - mapState.ref[0], y = -(j * step - h / 2) / s - mapState.ref[1];
+    const c = mix(low, high, Math.exp(-g * (x * x + y * y)));
+    const o = (j * cw + i) * 4; img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+  }
+  const off = OffscreenCanvasOr(cw, ch); off.ctx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(off.cv, 0, 0, w, h);
+  ctx.strokeStyle = "rgba(127,127,127,.18)"; ctx.lineWidth = 1;
+  for (let x = w / 2 % s; x < w; x += s) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = h / 2 % s; y < h; y += s) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+  // contour rings at K = 0.75, 0.5, 0.25, 0.1
+  const px = w / 2 + mapState.ref[0] * s, py = h / 2 - mapState.ref[1] * s;
+  ctx.font = "11px Inter, sans-serif";
+  [0.75, 0.5, 0.25, 0.1].forEach((k) => {
+    const r = Math.sqrt(-Math.log(k) / g) * s;
+    ctx.strokeStyle = "rgba(127,127,127,.6)"; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.arc(px, py, r, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css("--text"); ctx.fillText("K=" + k, px + r * 0.71 + 3, py - r * 0.71 - 3);
+  });
+  ctx.fillStyle = "#fff"; ctx.strokeStyle = "#111"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, 8, 0, 7); ctx.fill(); ctx.stroke();
+  $("#m-gamma-out").textContent = fmt(g);
+  const sig = Math.sqrt(1 / (2 * g));
+  $("#m-desc").textContent = g < 0.2
+    ? `γ = ${fmt(g)}: very wide kernel (σ ≈ ${sig.toFixed(2)}). Points several units away still look similar, so models built on it are smooth and may underfit.`
+    : g > 3
+    ? `γ = ${fmt(g)}: very narrow kernel (σ ≈ ${sig.toFixed(2)}). Only near neighbours count, so models can memorise individual points and overfit.`
+    : `γ = ${fmt(g)}: moderate width (σ ≈ ${sig.toFixed(2)}). Similarity fades over about one unit, a typical sweet spot for standardized features.`;
+}
+function OffscreenCanvasOr(w, h) { const cv = document.createElement("canvas"); cv.width = w; cv.height = h; return { cv, ctx: cv.getContext("2d") }; }
+function mapReadout(e) {
+  const p = mapCoords(e), dx = p[0] - mapState.ref[0], dy = p[1] - mapState.ref[1], d = Math.hypot(dx, dy);
+  $("#m-k").textContent = Math.exp(-logv(mG) * d * d).toFixed(3);
+  $("#m-d").textContent = d.toFixed(2);
+}
+mCv.addEventListener("pointerdown", (e) => { mapState.drag = true; mCv.setPointerCapture(e.pointerId); mapState.ref = mapCoords(e); drawMap(); $("#map-hint").style.display = "none"; });
+mCv.addEventListener("pointermove", (e) => { if (mapState.drag) { mapState.ref = mapCoords(e); drawMap(); } mapReadout(e); });
+mCv.addEventListener("pointerup", () => (mapState.drag = false));
+mG.addEventListener("input", drawMap);
+
+/* ======================= 04 · playground ======================= */
+const pgCv = $("#pg-cv"), pgG = $("#pg-gamma"), pgL = $("#pg-lambda");
+const pg = { pts: [], cls: 1, preset: "moons", seed: 1, bumps: false, model: null, view: { x: 3.2, y: 2 } };
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(r) { return Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()); }
+function makePreset(name, seed) {
+  const r = rng(seed * 7919 + name.length), P = [], n = 60;
+  if (name === "moons") for (let i = 0; i < n; i++) {
+    const t = Math.PI * r();
+    P.push([Math.cos(t) - 0.5 + 0.26 * gauss(r), Math.sin(t) - 0.25 + 0.26 * gauss(r), 1]);
+    P.push([0.5 - Math.cos(t) + 0.26 * gauss(r) , 0.25 - Math.sin(t) + 0.26 * gauss(r), -1]);
+  }
+  if (name === "circles") for (let i = 0; i < n; i++) {
+    const t1 = 2 * Math.PI * r(), t2 = 2 * Math.PI * r();
+    P.push([0.6 * Math.cos(t1) + 0.12 * gauss(r), 0.6 * Math.sin(t1) + 0.12 * gauss(r), 1]);
+    P.push([1.5 * Math.cos(t2) + 0.12 * gauss(r), 1.5 * Math.sin(t2) + 0.12 * gauss(r), -1]);
+  }
+  if (name === "xor") for (let i = 0; i < 2 * n; i++) {
+    const x = (r() * 2 - 1) * 2.6, y = (r() * 2 - 1) * 1.7;
+    if (Math.abs(x) < 0.12 || Math.abs(y) < 0.12) continue;
+    P.push([x, y, x * y > 0 ? 1 : -1]);
+  }
+  if (name === "blobs") for (let i = 0; i < n; i++) {
+    P.push([-1 + 0.55 * gauss(r), 0.4 + 0.55 * gauss(r), 1]);
+    P.push([1 + 0.55 * gauss(r), -0.4 + 0.55 * gauss(r), -1]);
+  }
+  return P;
+}
+// Train kernel ridge on labels ±1: A = K + λI, α = A⁻¹y, LOO residual eᵢ = αᵢ / (A⁻¹)ᵢᵢ.
+function train() {
+  const P = pg.pts, n = P.length, g = logv(pgG), lam = logv(pgL);
+  if (n === 0 || !P.some((p) => p[2] > 0) || !P.some((p) => p[2] < 0)) { pg.model = null; return; }
+  const A = new Float64Array(n * n), I = new Float64Array(n * n);
+  for (let i = 0; i < n; i++) { I[i * n + i] = 1; for (let j = 0; j < n; j++) {
+    const dx = P[i][0] - P[j][0], dy = P[i][1] - P[j][1];
+    A[i * n + j] = Math.exp(-g * (dx * dx + dy * dy)) + (i === j ? lam : 0);
+  } }
+  // Gauss-Jordan inverse (A is symmetric positive definite, so no pivoting is needed)
+  for (let c = 0; c < n; c++) {
+    const piv = A[c * n + c];
+    for (let k = 0; k < n; k++) { A[c * n + k] /= piv; I[c * n + k] /= piv; }
+    for (let r = 0; r < n; r++) if (r !== c) {
+      const f = A[r * n + c]; if (f === 0) continue;
+      for (let k = 0; k < n; k++) { A[r * n + k] -= f * A[c * n + k]; I[r * n + k] -= f * I[c * n + k]; }
+    }
+  }
+  const alpha = new Float64Array(n);
+  for (let i = 0; i < n; i++) { let s = 0; for (let j = 0; j < n; j++) s += I[i * n + j] * P[j][2]; alpha[i] = s; }
+  let tr = 0, loo = 0;
+  for (let i = 0; i < n; i++) {
+    const y = P[i][2], fi = y - lam * alpha[i];           // f(xᵢ) = y − λαᵢ
+    const floo = y - alpha[i] / I[i * n + i];             // leave-one-out prediction
+    if (Math.sign(fi) === y) tr++; if (Math.sign(floo) === y) loo++;
+  }
+  pg.model = { alpha, g, train: tr / n, loo: loo / n };
+}
+function f(x, y) {
+  const P = pg.pts, a = pg.model.alpha, g = pg.model.g; let s = 0;
+  for (let i = 0; i < P.length; i++) { const dx = x - P[i][0], dy = y - P[i][1]; const d2 = dx * dx + dy * dy; if (d2 * g < 30) s += a[i] * Math.exp(-g * d2); }
+  return s;
+}
+function pgScale(w, h) { return Math.min(w / (2 * pg.view.x), h / (2 * pg.view.y)); }
+function drawPlayground() {
+  const { ctx, w, h } = fit(pgCv);
+  const s = pgScale(w, h), toPx = (x, y) => [w / 2 + x * s, h / 2 - y * s];
+  const ca = hexToRgb(css("--a")), cb = hexToRgb(css("--b")), bg = hexToRgb(css("--surface"));
+  ctx.clearRect(0, 0, w, h);
+  $("#pg-gamma-out").textContent = fmt(logv(pgG));
+  $("#pg-lambda-out").textContent = logv(pgL) < 0.01 ? logv(pgL).toExponential(0) : logv(pgL).toFixed(3);
+  if (pg.model) {
+    const step = 4, cw = Math.ceil(w / step), ch = Math.ceil(h / step), F = new Float32Array(cw * ch);
+    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) F[j * cw + i] = f((i * step + step / 2 - w / 2) / s, -(j * step + step / 2 - h / 2) / s);
+    const img = ctx.createImageData(cw, ch);
+    for (let k = 0; k < F.length; k++) {
+      const v = Math.max(-1, Math.min(1, F[k])), c = mix(bg, v > 0 ? ca : cb, 0.12 + 0.5 * Math.abs(v));
+      img.data[k * 4] = c[0]; img.data[k * 4 + 1] = c[1]; img.data[k * 4 + 2] = c[2]; img.data[k * 4 + 3] = 255;
+    }
+    const off = OffscreenCanvasOr(cw, ch); off.ctx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(off.cv, 0, 0, w, h);
+    // decision boundary via marching squares (sign changes on cell edges)
+    ctx.strokeStyle = css("--text"); ctx.lineWidth = 2; ctx.beginPath();
+    for (let j = 0; j < ch - 1; j++) for (let i = 0; i < cw - 1; i++) {
+      const a = F[j * cw + i], b = F[j * cw + i + 1], c = F[(j + 1) * cw + i + 1], d = F[(j + 1) * cw + i];
+      const e = [];
+      const cx = i * step + step / 2, cy = j * step + step / 2;
+      if ((a > 0) !== (b > 0)) e.push([cx + step * a / (a - b), cy]);
+      if ((b > 0) !== (c > 0)) e.push([cx + step, cy + step * b / (b - c)]);
+      if ((d > 0) !== (c > 0)) e.push([cx + step * d / (d - c), cy + step]);
+      if ((a > 0) !== (d > 0)) e.push([cx, cy + step * a / (a - d)]);
+      if (e.length >= 2) { ctx.moveTo(e[0][0], e[0][1]); ctx.lineTo(e[1][0], e[1][1]); }
+      if (e.length === 4) { ctx.moveTo(e[2][0], e[2][1]); ctx.lineTo(e[3][0], e[3][1]); }
+    }
+    ctx.stroke();
+    if (pg.bumps) {
+      const sig = Math.sqrt(1 / (2 * pg.model.g)) * s;
+      pg.pts.forEach((p, i) => { const [x, y] = toPx(p[0], p[1]); const a = Math.min(1, Math.abs(pg.model.alpha[i]));
+        ctx.strokeStyle = `rgba(${(p[2] > 0 ? ca : cb).join(",")},${0.15 + 0.6 * a})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, sig, 0, 7); ctx.stroke(); });
+    }
+  } else {
+    ctx.fillStyle = css("--surface-2"); ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = css("--muted"); ctx.font = "15px Inter, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("Add at least one point of each class to train", w / 2, h / 2); ctx.textAlign = "start";
+  }
+  pg.pts.forEach((p) => { const [x, y] = toPx(p[0], p[1]);
+    ctx.beginPath(); ctx.arc(x, y, 5.5, 0, 7); ctx.fillStyle = p[2] > 0 ? css("--a") : css("--b"); ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = css("--surface"); ctx.stroke(); });
+  const m = pg.model, v = $("#pg-verdict");
+  $("#pg-train").textContent = m ? (100 * m.train).toFixed(0) + "%" : "—";
+  $("#pg-loo").textContent = m ? (100 * m.loo).toFixed(0) + "%" : "—";
+  if (!m) { v.textContent = ""; v.className = "verdict"; }
+  else if (m.train - m.loo >= 0.05) { v.textContent = "Overfitting: the model memorises points it can't generalise from. Lower γ or raise λ."; v.className = "verdict warn"; }
+  else if (m.train < 0.9) { v.textContent = "Underfitting: the boundary is too simple for this data. Raise γ or lower λ."; v.className = "verdict warn"; }
+  else { v.textContent = "Good fit: training and leave-one-out accuracy agree."; v.className = "verdict good"; }
+}
+function retrain() { train(); drawPlayground(); }
+function loadPreset(name) {
+  pg.preset = name; pg.pts = name === "clear" ? [] : makePreset(name, pg.seed);
+  document.querySelectorAll("#pg-presets button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.p === name));
+  retrain();
+}
+$("#pg-presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) loadPreset(b.dataset.p); });
+$("#pg-class").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; pg.cls = +b.dataset.c;
+  document.querySelectorAll("#pg-class button").forEach((x) => x.setAttribute("aria-pressed", x === b)); });
+$("#pg-noise").addEventListener("click", () => { pg.seed++; if (pg.preset !== "clear") loadPreset(pg.preset); });
+$("#pg-bumps").addEventListener("click", (e) => { pg.bumps = !pg.bumps; e.currentTarget.setAttribute("aria-pressed", pg.bumps); drawPlayground(); });
+let raf = 0; const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(retrain); };
+pgG.addEventListener("input", schedule); pgL.addEventListener("input", schedule);
+pgCv.addEventListener("contextmenu", (e) => e.preventDefault());
+pgCv.addEventListener("pointerdown", (e) => {
+  const r = pgCv.getBoundingClientRect(), s = pgScale(r.width, r.height);
+  const x = (e.clientX - r.left - r.width / 2) / s, y = -(e.clientY - r.top - r.height / 2) / s;
+  if (e.button === 2) {
+    let best = -1, bd = (12 / s) ** 2;
+    pg.pts.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (d < bd) { bd = d; best = i; } });
+    if (best >= 0) pg.pts.splice(best, 1);
+  } else {
+    if (pg.pts.length >= 400) return;
+    pg.pts.push([x, y, e.shiftKey ? -pg.cls : pg.cls]);
+  }
+  retrain();
+});
+
+/* ---------- copy buttons ---------- */
+document.querySelectorAll(".copy").forEach((b) => b.addEventListener("click", async () => {
+  const text = b.parentElement.innerText.replace(/^Copy\n?/, "").replace(/^Copied!\n?/, "");
+  try { await navigator.clipboard.writeText(text); b.textContent = "Copied!"; } catch (e) { b.textContent = "Select & copy"; }
+  setTimeout(() => (b.textContent = "Copy"), 1500);
+}));
+
+/* ---------- boot ---------- */
+function redrawAll() { drawProfile(); drawMap(); drawPlayground(); }
+let rt = 0; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(redrawAll, 120); });
+loadPreset("moons");
+redrawAll();
+})();
+</script>
+</body>
+</html>

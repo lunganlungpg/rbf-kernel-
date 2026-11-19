@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/ci.yml/badge.svg)](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/ci.yml)
 [![Website](https://img.shields.io/badge/website-live-0e7490)](https://lunganlungpg.github.io/rbf-kernel-/)
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ### [▶ Open the interactive explorer](https://lunganlungpg.github.io/rbf-kernel-/)

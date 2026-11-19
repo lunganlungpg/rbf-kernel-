@@ -10,4 +10,4 @@
 - Rebuilt website: kernel profile, draggable similarity map, live kernel classifier playground
   with leave-one-out accuracy, tuning guide, light/dark themes, mobile layout.
 - Site moved to `site/`; case studies page cleaned up (removed broken `/_sdk/` and injected scripts).
-- CI (lint, tests on Python 3.9–3.13, example smoke tests), MIT license, contributing guide, issue templates.
+- CI (lint, tests on Python 3.11–3.13, example smoke tests), MIT license, contributing guide, issue templates.

@@ -7,7 +7,7 @@ name = "rbf-kernel"
 version = "1.0.0"
 description = "Learn, visualize and use RBF (Gaussian) kernels: readable NumPy implementations, tuning helpers and reproducible examples."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "lunganlungpg" }]
 keywords = ["rbf", "gaussian kernel", "svm", "kernel methods", "machine learning", "education"]
@@ -37,7 +37,7 @@ addopts = "--doctest-modules --doctest-glob=*.md -q"
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "NPY"]

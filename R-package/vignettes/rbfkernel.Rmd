@@ -1,0 +1,123 @@
+---
+title: "RBF kernel workflows for any dataset"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{RBF kernel workflows for any dataset}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8, fig.height = 3.4)
+```
+
+```{r}
+library(rbfkernel)
+```
+
+The RBF (Gaussian) kernel turns distance into similarity:
+$K(x, x') = \exp(-\gamma \lVert x - x' \rVert^2)$. Models built on it can fit
+curved relationships and boundaries. Two settings matter: the **width**
+$\gamma$ and the **regularisation** $\lambda$ (or the SVM cost $C$).
+`rbfkernel` tunes both for you.
+
+## 1. One call on any data frame
+
+Give `rbf_workflow()` a data frame and the column to predict:
+
+```{r}
+wf <- rbf_workflow(breast_cancer, target = "diagnosis")
+wf
+```
+
+It used the other 30 columns as features, standardised them on the training
+rows only, tuned $\gamma$ and $\lambda$ by **exact leave-one-out**, and scored
+the tuned model on 142 rows it never saw. Because the classes are imbalanced,
+it tuned for balanced accuracy.
+
+```{r, fig.width = 6, fig.height = 3}
+plot(wf)
+```
+
+The heat map shows leave-one-out performance over the grid (the red cross is
+the choice). Large $\gamma$ with small $\lambda$ overfits; small $\gamma$ with
+large $\lambda$ underfits.
+
+Use the tuned model on new rows. Encoding and scaling are applied
+automatically:
+
+```{r}
+predict(wf, breast_cancer[c(1, 100, 300), ])
+```
+
+## 2. Other kinds of data
+
+**Multiclass**, with a stratified split:
+
+```{r}
+rbf_workflow(iris, "Species", plot = FALSE)$confusion
+```
+
+**Regression** with a categorical feature (one-hot encoded automatically),
+compared with a predict-the-mean baseline:
+
+```{r}
+cars <- transform(mtcars[, c("mpg", "wt", "hp", "cyl")], cyl = factor(cyl))
+w <- rbf_workflow(cars, "mpg", plot = FALSE)
+w$metrics
+w$baseline
+```
+
+**Missing values** are dropped and reported:
+
+```{r}
+rbf_workflow(airquality[, 1:4], "Ozone", plot = FALSE)$notes
+```
+
+**Two features**: the figure adds the decision regions:
+
+```{r}
+moons <- make_moons(300, noise = 0.25)
+plot(rbf_workflow(moons, "class", plot = FALSE))
+```
+
+**An SVM instead of kernel ridge** (needs the e1071 package), tuned by 5-fold
+cross-validation with scaling inside each fold:
+
+```{r, eval = requireNamespace("e1071", quietly = TRUE)}
+rbf_workflow(breast_cancer, "diagnosis", method = "svm", plot = FALSE)$metrics
+```
+
+Set `output_dir` to save the metrics, tuning grid, test predictions, confusion
+matrix, figure and a text report.
+
+## 3. Why tuning is fast: exact leave-one-out
+
+For kernel ridge, the leave-one-out residual has a closed form,
+$e_i = \alpha_i / [(K + \lambda I)^{-1}]_{ii}$. With one eigendecomposition
+$K = U D U^\top$ per $\gamma$, every $\lambda$ costs only matrix products:
+
+```{r}
+tuned <- krr_tune(iris[, 1:4], iris$Species, lambdas = 10^seq(-4, 2, by = 0.5))
+tuned
+nrow(tuned$grid)   # (gamma, lambda) pairs, each an exact leave-one-out score
+```
+
+## 4. Building blocks
+
+```{r}
+x <- scale(as.matrix(iris[, 1:4]))
+c(scale = gamma_scale(x), median = gamma_median(x))   # starting values for gamma
+K <- rbf_kernel(x, gamma = 0.25)
+fit <- krr(iris[, 1:4], iris$Species, gamma = 0.25, lambda = 0.1)
+head(predict(fit, iris[, 1:4], type = "score"), 3)
+```
+
+For large data, replace the n x n kernel by an explicit feature map and use a
+linear model on it:
+
+```{r}
+Zr <- predict(rff_map(x, 0.25, n_components = 2000), x)   # random Fourier features
+Zn <- predict(nystroem_map(x, 0.25, n_components = 50), x) # Nystroem, 50 landmarks
+c(rff = max(abs(tcrossprod(Zr) - K)), nystroem = max(abs(tcrossprod(Zn) - K)))
+```

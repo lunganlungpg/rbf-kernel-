@@ -34,6 +34,7 @@ The RBF kernel turns *distance* into *similarity*: identical points score 1, dis
 | Part | What it gives you | Where |
 |---|---|---|
 | 🌐 **Interactive explorer** | Kernel profile, draggable similarity map, and a **live kernel classifier** in the browser that shows training vs leave-one-out accuracy | [`site/index.html`](site/index.html) · [live](https://lunganlungpg.github.io/rbf-kernel-/) |
+| 📦 **`rbfkernel` R package** | Kernel ridge (exact leave-one-out tuning), RBF SVMs, random Fourier features, Nyström, and **`rbf_workflow()`: one call that models any data frame** (classification or regression), evaluates on held-out data and exports results | [`R-package/`](R-package) |
 | 🐍 **`rbf_kernel` package** | Readable NumPy implementations: RBF kernel, γ heuristics, kernel ridge, Random Fourier Features, Nyström, leak-free SVM tuning | [`rbf_kernel/`](rbf_kernel) |
 | 🧪 **Examples** | Five runnable scripts, from "what is K?" to tuned real-data models | [`examples/`](examples) |
 | 📚 **Case studies** | How RBF models are set up in healthcare, biometrics, security, finance and OCR | [`site/case-studies.html`](site/case-studies.html) · [summary](docs/case-studies.md) |
@@ -41,6 +42,7 @@ The RBF kernel turns *distance* into *similarity*: identical points score 1, dis
 
 ```
 rbf-kernel-/
+├── R-package/           # the rbfkernel R package (workflow, vignette, tests)
 ├── rbf_kernel/          # the Python package
 │   ├── kernels.py       #   rbf_kernel, pairwise distances, gamma heuristics
 │   ├── approx.py        #   RandomFourierFeatures, NystroemRBF
@@ -68,6 +70,14 @@ python examples/01_kernel_basics.py
 ```
 
 Or install straight from GitHub: `pip install "git+https://github.com/lunganlungpg/rbf-kernel-.git"`.
+
+**Using R?** Install the companion package and model any dataset in one call:
+
+```r
+remotes::install_github("lunganlungpg/rbf-kernel-", subdir = "R-package", build_vignettes = TRUE)
+library(rbfkernel)
+wf <- rbf_workflow(breast_cancer, target = "diagnosis", output_dir = "results")
+```
 
 **Compute a kernel matrix** (this block is run as a test, so it is guaranteed to work):
 

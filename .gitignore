@@ -9,3 +9,10 @@ venv/
 .ruff_cache/
 .ipynb_checkpoints/
 .DS_Store
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rcheck/
+rbfkernel_*.tar.gz
+R-package/inst/doc/

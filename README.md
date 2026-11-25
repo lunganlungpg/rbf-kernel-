@@ -5,6 +5,7 @@
 **Learn, see and use the RBF (Gaussian) kernel:** an interactive website, a small tested Python package, and reproducible examples.
 
 [![CI](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/ci.yml/badge.svg)](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/ci.yml)
+[![R package](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/r-package.yml/badge.svg)](https://github.com/lunganlungpg/rbf-kernel-/actions/workflows/r-package.yml)
 [![Website](https://img.shields.io/badge/website-live-0e7490)](https://lunganlungpg.github.io/rbf-kernel-/)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
